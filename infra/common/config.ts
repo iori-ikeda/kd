@@ -7,5 +7,5 @@ export interface ProdConfig extends Config {}
 
 interface AccountConfig {
     id: string;
-    region: "ap-northeast-1";
+    region: string;
 }
