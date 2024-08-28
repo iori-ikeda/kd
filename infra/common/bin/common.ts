@@ -2,20 +2,38 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { CommonStack } from '../lib/common-stack';
+import { Config} from '../config';
+import { devConfig } from '../development';
+import { prodConfig } from '../production';
 
-const app = new cdk.App();
-new CommonStack(app, 'CommonStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+type Env = 'dev' | 'prod';
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+const getConfig = (env: Env): Config => {
+  switch (env) {
+    case 'dev':
+      return devConfig;
+    case 'prod':
+      return prodConfig;
+    default:
+      throw new Error('Invalid environment');
+  }
+}
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+const initStack = () => {
+  const env = process.env.KD_COMMON_ENV as Env | undefined;
+  if (!env || !['dev', 'prod'].includes(env)) {
+    throw new Error('Invalid environment');
+  }
+  const stackId = `kd-common-${env}`;
+  const config = getConfig(env);
+  const app = new cdk.App();
+  new CommonStack(app, stackId, config,{
+    env: {
+      account: config.account.id,
+      region: config.account.region,
+    },
+  });
+  app.synth();
+}
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
-});
+initStack();
