@@ -2,20 +2,56 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { CommonStack } from '../lib/common-stack';
+import { Config} from '../config';
+import { getDevConfig } from '../development';
+import { getProdConfig } from '../production';
 
-const app = new cdk.App();
-new CommonStack(app, 'CommonStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+export type EnvironmentVariables = {
+  ENV: 'dev' | 'prod';
+  ACCOUNT_ID: string;
+  REGION: string;
+}
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+const getEnvironmentVariables = (): EnvironmentVariables => {
+  if (!process.env.KD_COMMON_ENV) {
+    throw new Error('KD_COMMON_ENV is not set');
+  }
+  if (!process.env.ACCOUNT_ID) {
+    throw new Error('ACCOUNT_ID is not set');
+  }
+  if (!process.env.REGION) {
+    throw new Error('REGION is not set');
+  }
+  return {
+    ENV: process.env.KD_COMMON_ENV as EnvironmentVariables['ENV'],
+    ACCOUNT_ID: process.env.ACCOUNT_ID as EnvironmentVariables['ACCOUNT_ID'],
+    REGION: process.env.REGION as EnvironmentVariables['REGION'],
+  };
+}
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+const getConfig = (environmentVariables: EnvironmentVariables): Config => {
+  switch (environmentVariables.ENV) {
+    case 'dev':
+      return getDevConfig(environmentVariables);
+    case 'prod':
+      return getProdConfig(environmentVariables);
+    default:
+      throw new Error('Invalid environment');
+  }
+}
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
-});
+const initStack = () => {
+  const environmentVariables = getEnvironmentVariables();
+  const stackId = `kd-common-${environmentVariables.ENV}`;
+  const config = getConfig(environmentVariables);
+  const app = new cdk.App();
+  new CommonStack(app, stackId, config,{
+    env: {
+      account: config.account.id,
+      region: config.account.region,
+    },
+  });
+  app.synth();
+}
+
+initStack();
