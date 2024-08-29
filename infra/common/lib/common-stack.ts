@@ -71,7 +71,7 @@ export class CommonStack extends cdk.Stack {
 				`${idWithHyphen}ingress-subnet-${nth}`,
 				{
 					cidrBlock,
-					availabilityZone: `${config.account.region}-${nth}${availabilityZoneAlphabet()}`,
+					availabilityZone: `${config.account.region}${availabilityZoneAlphabet()}`,
 					vpcId: vpc.vpcId,
 				},
 			);
