@@ -2,6 +2,7 @@ import type { Construct } from "constructs";
 import type { Config } from "../config";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
+import { Tags } from "aws-cdk-lib";
 
 export class CommonStack extends cdk.Stack {
 	constructor(
@@ -55,5 +56,29 @@ export class CommonStack extends cdk.Stack {
 			"10.0.240.0/21", // 10.0.240.0 - 10.0.247.255
 			"10.0.248.0/21", // 10.0.248.0 - 10.0.255.255
 		];
+
+		// Ingress 用の public subnet を3つの AZ に作成する
+		const ingressSubnets = publicSubnetBlocks.map((cidrBlock, index) => {
+			const availabilityZoneAlphabet = () => {
+				const alphabet = "abc";
+				return alphabet[index];
+			};
+
+			const nth = index + 1;
+			const ingressSubnet = new ec2.Subnet(
+				this,
+				`${idWithHyphen}ingress-subnet-${nth}`,
+				{
+					cidrBlock,
+					availabilityZone: `${config.account.region}-${nth}${availabilityZoneAlphabet()}`,
+					vpcId: vpc.vpcId,
+				},
+			);
+			Tags.of(ingressSubnet).add(
+				"Name",
+				`${idWithHyphen}ingress-subnet-${nth}`,
+			);
+			return ingressSubnet;
+		});
 	}
 }
