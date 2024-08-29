@@ -22,7 +22,7 @@ export class CommonStack extends cdk.Stack {
 
 		// 65,536 個の ip アドレスを 32 個のサブネットに分割する
 		// 1つのサブネットあたり 2048 個の ip アドレスを持つことになる
-		const publicSubnetBlocks = [
+		const subnetCiderBlocks = [
 			"10.0.0.0/21", // 10.0.0.0 - 10.0.7.255
 			"10.0.8.0/21", // 10.0.8.0 - 10.0.15.255
 			"10.0.16.0/21", // 10.0.16.0 - 10.0.23.255
@@ -58,7 +58,7 @@ export class CommonStack extends cdk.Stack {
 		];
 
 		// Ingress 用の public subnet を3つの AZ に作成する
-		const ingressSubnets = publicSubnetBlocks.map((cidrBlock, index) => {
+		const ingressSubnets = subnetCiderBlocks.map((cidrBlock, index) => {
 			const availabilityZoneAlphabet = () => {
 				const alphabet = "acd";
 				return alphabet[index];
