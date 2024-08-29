@@ -58,6 +58,7 @@ export class CommonStack extends cdk.Stack {
 		];
 
 		// Ingress 用の public subnet を2つの AZ に作成する
+		// FIX: この作り方だと route table が作成されてしまう。subnet だけ作成するには　L1 で作成する必要がある.
 		const ingressSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
 		const ingressSubnets = ingressSubnetCiderBlocks.map((cidrBlock, index) => {
 			const availabilityZoneAlphabet = () => {
