@@ -56,11 +56,10 @@ export class CommonStack extends cdk.Stack {
 			"10.0.240.0/21", // 10.0.240.0 - 10.0.247.255
 			"10.0.248.0/21", // 10.0.248.0 - 10.0.255.255
 		];
+		const availabilityZones = ["a", "c", "d"];
 
 		// Ingress 用の public subnet を2つの AZ に作成する
 		const ingressSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
-		const availabilityZones = ["a", "c", "d"] as const;
-
 		const ingressSubnets = ingressSubnetCiderBlocks.map((cidrBlock, index) => {
 			const nth = index + 1;
 			const cfnIngressSubnet = new cdk.aws_ec2.CfnSubnet(
