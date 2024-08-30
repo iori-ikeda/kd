@@ -146,5 +146,27 @@ export class CommonStack extends cdk.Stack {
 				return cfnManagementSubnet;
 			},
 		);
+
+		// egress 用の private subnet を2つの AZ に作成する
+		const egressSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
+		const egressSubnets = egressSubnetCiderBlocks.map((cidrBlock, index) => {
+			const nth = index + 1;
+			const cfnEgressSubnet = new cdk.aws_ec2.CfnSubnet(
+				this,
+				`${idWithHyphen}egress-subnet-${nth}`,
+				{
+					cidrBlock,
+					availabilityZone: `${config.account.region}${availabilityZones[index]}`,
+					vpcId: vpc.vpcId,
+					mapPublicIpOnLaunch: false,
+				},
+			);
+			Tags.of(cfnEgressSubnet).add(
+				"Name",
+				`${idWithHyphen}egress-subnet-${nth}`,
+			);
+
+			return cfnEgressSubnet;
+		});
 	}
 }
