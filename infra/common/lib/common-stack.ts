@@ -122,5 +122,29 @@ export class CommonStack extends cdk.Stack {
 
 			return cfnDbSubnet;
 		});
+
+		// 管理用の private subnet を2つの AZ に作成する
+		const managementSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
+		const managementSubnets = managementSubnetCiderBlocks.map(
+			(cidrBlock, index) => {
+				const nth = index + 1;
+				const cfnManagementSubnet = new cdk.aws_ec2.CfnSubnet(
+					this,
+					`${idWithHyphen}management-subnet-${nth}`,
+					{
+						cidrBlock,
+						availabilityZone: `${config.account.region}${availabilityZones[index]}`,
+						vpcId: vpc.vpcId,
+						mapPublicIpOnLaunch: false,
+					},
+				);
+				Tags.of(cfnManagementSubnet).add(
+					"Name",
+					`${idWithHyphen}management-subnet-${nth}`,
+				);
+
+				return cfnManagementSubnet;
+			},
+		);
 	}
 }
