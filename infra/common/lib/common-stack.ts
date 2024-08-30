@@ -79,5 +79,7 @@ export class CommonStack extends cdk.Stack {
 
 			return cfnIngressSubnet;
 		});
+		// TODO: application 用の private with egress subnet を2つの AZ に作成する
+		// TODO: db 用の private isolate subnet を2つの AZ に作成する
 	}
 }
