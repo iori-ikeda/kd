@@ -79,7 +79,48 @@ export class CommonStack extends cdk.Stack {
 
 			return cfnIngressSubnet;
 		});
-		// TODO: application 用の private with egress subnet を2つの AZ に作成する
-		// TODO: db 用の private isolate subnet を2つの AZ に作成する
+
+		// application 用の private subnet を2つの AZ に作成する
+		const applicationSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
+		const applicationSubnets = applicationSubnetCiderBlocks.map(
+			(cidrBlock, index) => {
+				const nth = index + 1;
+				const cfnApplicationSubnet = new cdk.aws_ec2.CfnSubnet(
+					this,
+					`${idWithHyphen}application-subnet-${nth}`,
+					{
+						cidrBlock,
+						availabilityZone: `${config.account.region}${availabilityZones[index]}`,
+						vpcId: vpc.vpcId,
+						mapPublicIpOnLaunch: false,
+					},
+				);
+				Tags.of(cfnApplicationSubnet).add(
+					"Name",
+					`${idWithHyphen}application-subnet-${nth}`,
+				);
+
+				return cfnApplicationSubnet;
+			},
+		);
+
+		// db 用の private subnet を2つの AZ に作成する
+		const dbSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
+		const dbSubnets = dbSubnetCiderBlocks.map((cidrBlock, index) => {
+			const nth = index + 1;
+			const cfnDbSubnet = new cdk.aws_ec2.CfnSubnet(
+				this,
+				`${idWithHyphen}db-subnet-${nth}`,
+				{
+					cidrBlock,
+					availabilityZone: `${config.account.region}${availabilityZones[index]}`,
+					vpcId: vpc.vpcId,
+					mapPublicIpOnLaunch: false,
+				},
+			);
+			Tags.of(cfnDbSubnet).add("Name", `${idWithHyphen}db-subnet-${nth}`);
+
+			return cfnDbSubnet;
+		});
 	}
 }
