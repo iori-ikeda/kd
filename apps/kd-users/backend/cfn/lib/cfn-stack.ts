@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import type { Construct } from "constructs";
+import * as iam from "aws-cdk-lib/aws-iam";
 import type { Config } from "../config";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecr from "aws-cdk-lib/aws-ecr";
@@ -36,5 +37,20 @@ export class CfnStack extends cdk.Stack {
 			vpc,
 			containerInsights: true,
 		});
+
+		//TODO:  common に置いても良い？
+		const taskExecutionRole = new iam.Role(
+			this,
+			`${idWithHyphen}task-execution-role`,
+			{
+				roleName: `${idWithHyphen}task-execution-role`,
+				assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+				managedPolicies: [
+					iam.ManagedPolicy.fromAwsManagedPolicyName(
+						"service-role/AmazonECSTaskExecutionRolePolicy",
+					),
+				],
+			},
+		);
 	}
 }
