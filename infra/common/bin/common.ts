@@ -2,9 +2,7 @@
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { CommonStack } from "../lib/common-stack";
-import type { Config } from "../config";
-import { getDevConfig } from "../development";
-import { getProdConfig } from "../production";
+import { getConfig } from "../config";
 
 export type EnvironmentVariables = {
 	ENV: "dev" | "prod";
@@ -27,17 +25,6 @@ const getEnvironmentVariables = (): EnvironmentVariables => {
 		KD_COMMON_CDK_CONFIG_JSON: process.env
 			.KD_COMMON_CDK_CONFIG_JSON as EnvironmentVariables["KD_COMMON_CDK_CONFIG_JSON"],
 	};
-};
-
-const getConfig = (environmentVariables: EnvironmentVariables): Config => {
-	switch (environmentVariables.ENV) {
-		case "dev":
-			return getDevConfig(environmentVariables);
-		case "prod":
-			return getProdConfig(environmentVariables);
-		default:
-			throw new Error("Invalid environment");
-	}
 };
 
 const initStack = () => {
