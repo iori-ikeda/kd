@@ -15,7 +15,7 @@ export class CommonStack extends cdk.Stack {
 		const idWithHyphen = `${id}-`;
 
 		const vpc = new ec2.Vpc(this, `${idWithHyphen}vpc`, {
-			cidr: "10.0.0.0/16",
+			ipAddresses: ec2.IpAddresses.cidr("10.0.0.0/16"),
 			vpcName: `${idWithHyphen}vpc`,
 			subnetConfiguration: [],
 		});
@@ -167,14 +167,6 @@ export class CommonStack extends cdk.Stack {
 			);
 
 			return cfnEgressSubnet;
-		});
-
-		const bucket = new cdk.aws_s3.Bucket(this, `${idWithHyphen}bucket`, {
-			bucketName: `${idWithHyphen}bucket`,
-			versioned: true,
-			blockPublicAccess: cdk.aws_s3.BlockPublicAccess.BLOCK_ALL,
-			removalPolicy: cdk.RemovalPolicy.DESTROY,
-			autoDeleteObjects: true,
 		});
 	}
 }
