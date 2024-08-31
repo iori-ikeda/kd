@@ -38,12 +38,11 @@ const getConfig = (environmentVariables: EnvironmentVariables): Config => {
 const initStack = () => {
 	const environmentVariables = getEnvironmentVariables();
 	const stackId = `kd-common-${environmentVariables.ENV}`;
-	const config = getConfig(environmentVariables);
 	const app = new cdk.App();
-	new CommonStack(app, stackId, config, {
+	new CommonStack(app, stackId, {
 		env: {
-			account: config.account.id,
-			region: config.account.region,
+			account: environmentVariables.ACCOUNT_ID,
+			region: environmentVariables.REGION,
 		},
 	});
 	app.synth();
