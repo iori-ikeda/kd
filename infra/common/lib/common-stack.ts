@@ -168,5 +168,13 @@ export class CommonStack extends cdk.Stack {
 
 			return cfnEgressSubnet;
 		});
+
+		const bucket = new cdk.aws_s3.Bucket(this, `${idWithHyphen}bucket`, {
+			bucketName: `${idWithHyphen}bucket`,
+			versioned: true,
+			blockPublicAccess: cdk.aws_s3.BlockPublicAccess.BLOCK_ALL,
+			removalPolicy: cdk.RemovalPolicy.DESTROY,
+			autoDeleteObjects: true,
+		});
 	}
 }
