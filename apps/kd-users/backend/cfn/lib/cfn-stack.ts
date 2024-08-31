@@ -52,5 +52,11 @@ export class CfnStack extends cdk.Stack {
 				],
 			},
 		);
+
+		const taskRole = new iam.Role(this, `${idWithHyphen}task-role`, {
+			roleName: `${idWithHyphen}task-role`,
+			assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+		});
+		// TODO: ポリシーを追加
 	}
 }
