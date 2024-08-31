@@ -65,8 +65,8 @@ export class CfnStack extends cdk.Stack {
 			{
 				family: `${idWithHyphen}task-definition`,
 				compatibility: ecs.Compatibility.FARGATE,
-				cpu: config.ecs.taskDef.cpu.toString(),
-				memoryMiB: config.ecs.taskDef.memoryMiB.toString(),
+				cpu: config.ecs.taskDef.cpu,
+				memoryMiB: config.ecs.taskDef.memoryMiB,
 				networkMode: ecs.NetworkMode.AWS_VPC,
 				executionRole: taskExecutionRole,
 				taskRole,

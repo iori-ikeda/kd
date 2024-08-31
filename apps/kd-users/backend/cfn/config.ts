@@ -48,8 +48,8 @@ interface VpcConfig {
 
 interface EcsConfig {
 	taskDef: {
-		cpu: number;
-		memoryMiB: number;
+		cpu: string; // ecs.TaskDefinition の引数で string で渡す必要があるため
+		memoryMiB: string; // ecs.TaskDefinition の引数で string で渡す必要があるため
 		// TODO: support multiple containers
 		container: {
 			cpu: number;
