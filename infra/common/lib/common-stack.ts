@@ -2,9 +2,15 @@ import type { Construct } from "constructs";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Tags } from "aws-cdk-lib";
+import type { Config } from "../config";
 
 export class CommonStack extends cdk.Stack {
-	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+	constructor(
+		scope: Construct,
+		id: string,
+		config: Config,
+		props?: cdk.StackProps,
+	) {
 		super(scope, id, props);
 		const idWithHyphen = `${id}-`;
 
