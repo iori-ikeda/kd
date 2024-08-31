@@ -67,7 +67,7 @@ export class CommonStack extends cdk.Stack {
 				`${idWithHyphen}ingress-subnet-${nth}`,
 				{
 					cidrBlock,
-					availabilityZone: `${config.account.region}${availabilityZones[index]}`,
+					availabilityZone: `${this.region}${availabilityZones[index]}`,
 					vpcId: vpc.vpcId,
 					mapPublicIpOnLaunch: true,
 				},
@@ -90,7 +90,7 @@ export class CommonStack extends cdk.Stack {
 					`${idWithHyphen}application-subnet-${nth}`,
 					{
 						cidrBlock,
-						availabilityZone: `${config.account.region}${availabilityZones[index]}`,
+						availabilityZone: `${this.region}${availabilityZones[index]}`,
 						vpcId: vpc.vpcId,
 						mapPublicIpOnLaunch: false,
 					},
@@ -113,7 +113,7 @@ export class CommonStack extends cdk.Stack {
 				`${idWithHyphen}db-subnet-${nth}`,
 				{
 					cidrBlock,
-					availabilityZone: `${config.account.region}${availabilityZones[index]}`,
+					availabilityZone: `${this.region}${availabilityZones[index]}`,
 					vpcId: vpc.vpcId,
 					mapPublicIpOnLaunch: false,
 				},
@@ -133,7 +133,7 @@ export class CommonStack extends cdk.Stack {
 					`${idWithHyphen}management-subnet-${nth}`,
 					{
 						cidrBlock,
-						availabilityZone: `${config.account.region}${availabilityZones[index]}`,
+						availabilityZone: `${this.region}${availabilityZones[index]}`,
 						vpcId: vpc.vpcId,
 						mapPublicIpOnLaunch: false,
 					},
@@ -156,7 +156,7 @@ export class CommonStack extends cdk.Stack {
 				`${idWithHyphen}egress-subnet-${nth}`,
 				{
 					cidrBlock,
-					availabilityZone: `${config.account.region}${availabilityZones[index]}`,
+					availabilityZone: `${this.region}${availabilityZones[index]}`,
 					vpcId: vpc.vpcId,
 					mapPublicIpOnLaunch: false,
 				},
