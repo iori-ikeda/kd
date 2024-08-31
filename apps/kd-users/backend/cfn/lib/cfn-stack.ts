@@ -1,7 +1,9 @@
 import * as cdk from "aws-cdk-lib";
 import type { Construct } from "constructs";
 import type { Config } from "../config";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecr from "aws-cdk-lib/aws-ecr";
+import * as ecs from "aws-cdk-lib/aws-ecs";
 
 export class CfnStack extends cdk.Stack {
 	constructor(
@@ -12,6 +14,10 @@ export class CfnStack extends cdk.Stack {
 	) {
 		super(scope, id, props);
 		const idWithHyphen = `${id}-`;
+
+		const vpc = ec2.Vpc.fromLookup(this, `${idWithHyphen}vpc`, {
+			vpcId: config.vpc.id,
+		});
 
 		const ecrRepository = new ecr.Repository(
 			this,
@@ -24,5 +30,11 @@ export class CfnStack extends cdk.Stack {
 				// TODO: lifecycle や scan の設定
 			},
 		);
+
+		const ecsCluster = new ecs.Cluster(this, `${idWithHyphen}cluster`, {
+			clusterName: `${idWithHyphen}cluster`,
+			vpc,
+			containerInsights: true,
+		});
 	}
 }

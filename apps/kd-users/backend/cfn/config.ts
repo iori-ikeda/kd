@@ -11,15 +11,23 @@ export const getConfig = (
 			id: json.account.id,
 			region: json.account.region,
 		},
+		vpc: {
+			id: json.vpc.id,
+		},
 	};
 };
 
 export interface Config {
 	env: "dev" | "prod";
 	account: AccountConfig;
+	vpc: VpcConfig;
 }
 
 interface AccountConfig {
 	id: string;
 	region: string;
+}
+
+interface VpcConfig {
+	id: string;
 }
