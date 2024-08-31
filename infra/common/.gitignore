@@ -7,5 +7,4 @@ node_modules
 .cdk.staging
 cdk.out
 
-.env.local
-.env
+kd-common-prod-cdk-config.json

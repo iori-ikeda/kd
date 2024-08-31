@@ -6,3 +6,5 @@ node_modules
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+
+kd-users-prod-cdk-config.json
