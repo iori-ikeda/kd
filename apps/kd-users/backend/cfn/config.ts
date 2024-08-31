@@ -14,6 +14,19 @@ export const getConfig = (
 		vpc: {
 			id: json.vpc.id,
 		},
+		ecs: {
+			taskDef: {
+				cpu: json.ecs.taskDef.cpu,
+				memoryMiB: json.ecs.taskDef.memoryMiB,
+				container: {
+					cpu: json.ecs.taskDef.container.cpu,
+					memoryLimitMiB: json.ecs.taskDef.container.memoryLimitMiB,
+					containerPort: json.ecs.taskDef.container.containerPort,
+					hostPort: json.ecs.taskDef.container.hostPort,
+					protocol: json.ecs.taskDef.container.protocol,
+				},
+			},
+		},
 	};
 };
 
@@ -21,6 +34,7 @@ export interface Config {
 	env: "dev" | "prod";
 	account: AccountConfig;
 	vpc: VpcConfig;
+	ecs: EcsConfig;
 }
 
 interface AccountConfig {
@@ -30,4 +44,19 @@ interface AccountConfig {
 
 interface VpcConfig {
 	id: string;
+}
+
+interface EcsConfig {
+	taskDef: {
+		cpu: number;
+		memoryMiB: number;
+		// TODO: support multiple containers
+		container: {
+			cpu: number;
+			memoryLimitMiB: number;
+			containerPort: number;
+			hostPort: number;
+			protocol: "tcp" | "udp";
+		};
+	};
 }

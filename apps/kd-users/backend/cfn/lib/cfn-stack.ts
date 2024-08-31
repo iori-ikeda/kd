@@ -58,5 +58,30 @@ export class CfnStack extends cdk.Stack {
 			assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
 		});
 		// TODO: ポリシーを追加
+
+		const taskDefinition = new ecs.TaskDefinition(
+			this,
+			`${idWithHyphen}task-definition`,
+			{
+				family: `${idWithHyphen}task-definition`,
+				compatibility: ecs.Compatibility.FARGATE,
+				cpu: config.ecs.taskDef.cpu.toString(),
+				memoryMiB: config.ecs.taskDef.memoryMiB.toString(),
+				networkMode: ecs.NetworkMode.AWS_VPC,
+				executionRole: taskExecutionRole,
+				taskRole,
+			},
+		);
+		taskDefinition
+			.addContainer(`${idWithHyphen}container`, {
+				image: ecs.ContainerImage.fromEcrRepository(ecrRepository, "latest"),
+				cpu: config.ecs.taskDef.container.cpu,
+				memoryLimitMiB: config.ecs.taskDef.container.memoryLimitMiB,
+			})
+			.addPortMappings({
+				containerPort: config.ecs.taskDef.container.containerPort,
+				hostPort: config.ecs.taskDef.container.hostPort,
+				protocol: ecs.Protocol.TCP,
+			});
 	}
 }
