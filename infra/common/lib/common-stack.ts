@@ -98,6 +98,10 @@ export class CommonStack extends cdk.Stack {
 		];
 		const availabilityZones = ["a", "c", "d"];
 
+		const subnets: ec2.CfnSubnet[] = [];
+		let publicSubnets: ec2.CfnSubnet[] = [];
+		let privateSubnets: ec2.CfnSubnet[] = [];
+
 		// Ingress 用の public subnet を2つの AZ に作成する
 		const ingressSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
 		const ingressSubnets = ingressSubnetCiderBlocks.map((cidrBlock, index) => {
@@ -119,6 +123,7 @@ export class CommonStack extends cdk.Stack {
 
 			return cfnIngressSubnet;
 		});
+		subnets.push(...ingressSubnets);
 
 		// application 用の private subnet を2つの AZ に作成する
 		const applicationSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
@@ -143,6 +148,7 @@ export class CommonStack extends cdk.Stack {
 				return cfnApplicationSubnet;
 			},
 		);
+		subnets.push(...applicationSubnets);
 
 		// db 用の private subnet を2つの AZ に作成する
 		const dbSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
@@ -162,6 +168,7 @@ export class CommonStack extends cdk.Stack {
 
 			return cfnDbSubnet;
 		});
+		subnets.push(...dbSubnets);
 
 		// 管理用の private subnet を2つの AZ に作成する
 		const managementSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
@@ -186,6 +193,10 @@ export class CommonStack extends cdk.Stack {
 				return cfnManagementSubnet;
 			},
 		);
+		subnets.push(...managementSubnets);
+
+		publicSubnets = subnets.filter((subnet) => subnet.mapPublicIpOnLaunch);
+		privateSubnets = subnets.filter((subnet) => !subnet.mapPublicIpOnLaunch);
 
 		// egress 用の private subnet を2つの AZ に作成する
 		const egressSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
@@ -208,6 +219,20 @@ export class CommonStack extends cdk.Stack {
 
 			return cfnEgressSubnet;
 		});
+		subnets.push(...egressSubnets);
+
+		// associate public route talbe with public subnets
+		for (const subnet of publicSubnets) {
+			new ec2.CfnSubnetRouteTableAssociation(
+				this,
+				// `${idWithHyphen}public-subnet-${subnet.ref}-association`,
+				`${idWithHyphen}public-subnet-${subnet.toString()}-association`,
+				{
+					subnetId: subnet.ref,
+					routeTableId: publicRouteTable.ref,
+				},
+			);
+		}
 
 		const publicLoadBalancerSG = new ec2.SecurityGroup(
 			this,
