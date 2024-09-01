@@ -20,7 +20,6 @@ export class CommonStack extends cdk.Stack {
 			subnetConfiguration: [],
 		});
 
-		// create internet gateway
 		const internetGateway = new ec2.CfnInternetGateway(
 			this,
 			`${idWithHyphen}igw`,
@@ -34,12 +33,11 @@ export class CommonStack extends cdk.Stack {
 			},
 		);
 
-		// attach internet gateway to vpc
 		new ec2.CfnVPCGatewayAttachment(this, `${idWithHyphen}igw-attachment`, {
 			vpcId: vpc.vpcId,
 			internetGatewayId: internetGateway.ref,
 		});
-		// create route table for public subnets
+
 		const publicRouteTable = new ec2.CfnRouteTable(
 			this,
 			`${idWithHyphen}public-route-table`,
@@ -221,7 +219,6 @@ export class CommonStack extends cdk.Stack {
 		});
 		subnets.push(...egressSubnets);
 
-		// associate public route talbe with public subnets
 		for (const subnet of publicSubnets) {
 			new ec2.CfnSubnetRouteTableAssociation(
 				this,
