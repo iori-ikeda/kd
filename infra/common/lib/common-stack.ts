@@ -182,5 +182,16 @@ export class CommonStack extends cdk.Stack {
 			"Name",
 			`${idWithHyphen}public-load-balancer-sg`,
 		);
+
+		const fargateServiceSG = new ec2.SecurityGroup(
+			this,
+			`${idWithHyphen}fargate-service-sg`,
+			{
+				vpc,
+				securityGroupName: `${idWithHyphen}fargate-service-sg`,
+			},
+		);
+		fargateServiceSG.addIngressRule(publicLoadBalancerSG, ec2.Port.tcp(80));
+		Tags.of(fargateServiceSG).add("Name", `${idWithHyphen}fargate-service-sg`);
 	}
 }
