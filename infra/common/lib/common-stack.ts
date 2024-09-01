@@ -40,6 +40,25 @@ export class CommonStack extends cdk.Stack {
 			internetGatewayId: internetGateway.ref,
 		});
 		// create route table for public subnets
+		const publicRouteTable = new ec2.CfnRouteTable(
+			this,
+			`${idWithHyphen}public-route-table`,
+			{
+				vpcId: vpc.vpcId,
+				tags: [
+					{
+						key: "Name",
+						value: `${idWithHyphen}public-route-table`,
+					},
+				],
+			},
+		);
+
+		new ec2.CfnRoute(this, `${idWithHyphen}public-route`, {
+			routeTableId: publicRouteTable.ref,
+			destinationCidrBlock: "0.0.0.0/0",
+			gatewayId: internetGateway.ref,
+		});
 
 		// 65,536 個の ip アドレスを 32 個のサブネットに分割する
 		// 1つのサブネットあたり 2048 個の ip アドレスを持つことになる
