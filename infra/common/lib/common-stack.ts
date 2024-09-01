@@ -20,6 +20,23 @@ export class CommonStack extends cdk.Stack {
 			subnetConfiguration: [],
 		});
 
+		// create internet gateway
+		const internetGateway = new ec2.CfnInternetGateway(
+			this,
+			`${idWithHyphen}igw`,
+			{
+				tags: [
+					{
+						key: "Name",
+						value: `${idWithHyphen}igw`,
+					},
+				],
+			},
+		);
+
+		// attach internet gateway to vpc
+		// create route table for public subnets
+
 		// 65,536 個の ip アドレスを 32 個のサブネットに分割する
 		// 1つのサブネットあたり 2048 個の ip アドレスを持つことになる
 		const subnetCiderBlocks = [
