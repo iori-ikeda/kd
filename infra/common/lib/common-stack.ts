@@ -168,5 +168,19 @@ export class CommonStack extends cdk.Stack {
 
 			return cfnEgressSubnet;
 		});
+
+		const publicLoadBalancerSG = new ec2.SecurityGroup(
+			this,
+			`${idWithHyphen}public-load-balancer-sg`,
+			{
+				vpc,
+				securityGroupName: `${idWithHyphen}public-load-balancer-sg`,
+			},
+		);
+		publicLoadBalancerSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80));
+		Tags.of(publicLoadBalancerSG).add(
+			"Name",
+			`${idWithHyphen}public-load-balancer-sg`,
+		);
 	}
 }
