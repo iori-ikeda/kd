@@ -26,6 +26,15 @@ export const getConfig = (
 					protocol: json.ecs.taskDef.container.protocol,
 				},
 			},
+			fargateService: {
+				securityGroupId: json.ecs.fargateService.securityGroupId,
+				subnets: json.ecs.fargateService.subnets,
+			},
+		},
+		alb: {
+			subnets: json.alb.subnets,
+			securityGroupId: json.alb.securityGroupId,
+			listener: json.alb.listener,
 		},
 	};
 };
@@ -35,6 +44,7 @@ export interface Config {
 	account: AccountConfig;
 	vpc: VpcConfig;
 	ecs: EcsConfig;
+	alb: AlbConfig;
 }
 
 interface AccountConfig {
@@ -58,5 +68,37 @@ interface EcsConfig {
 			hostPort: number;
 			protocol: "tcp" | "udp";
 		};
+	};
+	fargateService: {
+		securityGroupId: string;
+		subnets: Array<{
+			subnetId: string;
+			availabilityZone: string;
+		}>;
+	};
+}
+
+interface AlbConfig {
+	subnets: Array<{
+		subnetId: string;
+		availabilityZone: string;
+	}>;
+	securityGroupId: string;
+	listener: AlbListenerConfig;
+}
+
+interface AlbListenerConfig {
+	port: number;
+	certificates: Array<{
+		certificateArn: string;
+	}>;
+	targetGroups: Array<ListenerTargetGroupConfig>;
+}
+
+interface ListenerTargetGroupConfig {
+	port: number;
+	healthCheck: {
+		path: string;
+		healthyHttpCodes: string;
 	};
 }

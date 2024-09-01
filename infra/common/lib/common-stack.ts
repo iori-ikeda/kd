@@ -18,6 +18,8 @@ export class CommonStack extends cdk.Stack {
 			ipAddresses: ec2.IpAddresses.cidr("10.0.0.0/16"),
 			vpcName: `${idWithHyphen}vpc`,
 			subnetConfiguration: [],
+			enableDnsHostnames: true,
+			enableDnsSupport: true,
 		});
 
 		const internetGateway = new ec2.CfnInternetGateway(
@@ -146,6 +148,9 @@ export class CommonStack extends cdk.Stack {
 				return cfnApplicationSubnet;
 			},
 		);
+		// TODO: add NAT Gateway
+		// TODO: add route table association
+
 		subnets.push(...applicationSubnets);
 
 		// db 用の private subnet を2つの AZ に作成する
@@ -193,9 +198,6 @@ export class CommonStack extends cdk.Stack {
 		);
 		subnets.push(...managementSubnets);
 
-		publicSubnets = subnets.filter((subnet) => subnet.mapPublicIpOnLaunch);
-		privateSubnets = subnets.filter((subnet) => !subnet.mapPublicIpOnLaunch);
-
 		// egress 用の private subnet を2つの AZ に作成する
 		const egressSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
 		const egressSubnets = egressSubnetCiderBlocks.map((cidrBlock, index) => {
@@ -218,6 +220,9 @@ export class CommonStack extends cdk.Stack {
 			return cfnEgressSubnet;
 		});
 		subnets.push(...egressSubnets);
+
+		publicSubnets = subnets.filter((subnet) => subnet.mapPublicIpOnLaunch);
+		privateSubnets = subnets.filter((subnet) => !subnet.mapPublicIpOnLaunch);
 
 		for (const subnet of publicSubnets) {
 			new ec2.CfnSubnetRouteTableAssociation(
@@ -255,5 +260,133 @@ export class CommonStack extends cdk.Stack {
 		);
 		fargateServiceSG.addIngressRule(publicLoadBalancerSG, ec2.Port.tcp(80));
 		Tags.of(fargateServiceSG).add("Name", `${idWithHyphen}fargate-service-sg`);
+
+		// create VPC endpoint for fargate service
+		//
+		// needed vpc endpoints
+		// interface endpoint
+		// - ECR
+		//   -
+		// - CloudWatch Logs
+		// - Parameter Store
+		// - Secrets Manager
+		// gateway endpoint
+		// - S3
+		//
+
+		const engressRouteTable = new ec2.CfnRouteTable(
+			this,
+			`${idWithHyphen}engress-route-table`,
+			{
+				vpcId: vpc.vpcId,
+				tags: [
+					{
+						key: "Name",
+						value: `${idWithHyphen}engress-route-table`,
+					},
+				],
+			},
+		);
+
+		for (const subnet of egressSubnets) {
+			new ec2.CfnSubnetRouteTableAssociation(
+				this,
+				`${idWithHyphen}engress-${subnet.toString()}-association`,
+				{
+					routeTableId: engressRouteTable.ref,
+					subnetId: subnet.ref,
+				},
+			);
+		}
+
+		const ecrDkrEndpoint = new ec2.CfnVPCEndpoint(
+			this,
+			`${idWithHyphen}ecr-dkr-endpoint`,
+			{
+				vpcId: vpc.vpcId,
+				serviceName: "com.amazonaws.ap-northeast-1.ecr.dkr",
+				vpcEndpointType: "Interface",
+				subnetIds: egressSubnets.map((subnet) => subnet.ref),
+			},
+		);
+		Tags.of(ecrDkrEndpoint).add("Name", `${idWithHyphen}ecr-dkr-endpoint`);
+
+		const ecrApiEndpoint = new ec2.CfnVPCEndpoint(
+			this,
+			`${idWithHyphen}ecr-api-endpoint`,
+			{
+				vpcId: vpc.vpcId,
+				serviceName: "com.amazonaws.ap-northeast-1.ecr.api",
+				vpcEndpointType: "Interface",
+				subnetIds: egressSubnets.map((subnet) => subnet.ref),
+			},
+		);
+		Tags.of(ecrApiEndpoint).add("Name", `${idWithHyphen}ecr-api-endpoint`);
+
+		const s3Endpoint = new ec2.CfnVPCEndpoint(
+			this,
+			`${idWithHyphen}s3-endpoint`,
+			{
+				vpcId: vpc.vpcId,
+				serviceName: "com.amazonaws.ap-northeast-1.s3",
+				vpcEndpointType: "Gateway",
+				routeTableIds: [engressRouteTable.ref],
+			},
+		);
+		Tags.of(s3Endpoint).add("Name", `${idWithHyphen}s3-endpoint`); // FIX: Name tag を追加できてない
+
+		const logsEndpoint = new ec2.CfnVPCEndpoint(
+			this,
+			`${idWithHyphen}logs-endpoint`,
+			{
+				vpcId: vpc.vpcId,
+				serviceName: "com.amazonaws.ap-northeast-1.logs",
+				vpcEndpointType: "Interface",
+				subnetIds: egressSubnets.map((subnet) => subnet.ref),
+			},
+		);
+		Tags.of(logsEndpoint).add("Name", `${idWithHyphen}logs-endpoint`);
+
+		const parameterStoreEndpoint = new ec2.CfnVPCEndpoint(
+			this,
+			`${idWithHyphen}parameter-store-endpoint`,
+			{
+				vpcId: vpc.vpcId,
+				serviceName: "com.amazonaws.ap-northeast-1.ssm",
+				vpcEndpointType: "Interface",
+				subnetIds: egressSubnets.map((subnet) => subnet.ref),
+			},
+		);
+		Tags.of(parameterStoreEndpoint).add(
+			"Name",
+			`${idWithHyphen}parameter-store-endpoint`,
+		);
+
+		const secretsManagerEndpoint = new ec2.CfnVPCEndpoint(
+			this,
+			`${idWithHyphen}secrets-manager-endpoint`,
+			{
+				vpcId: vpc.vpcId,
+				serviceName: "com.amazonaws.ap-northeast-1.secretsmanager",
+				vpcEndpointType: "Interface",
+				subnetIds: egressSubnets.map((subnet) => subnet.ref),
+			},
+		);
+		Tags.of(secretsManagerEndpoint).add(
+			"Name",
+			`${idWithHyphen}secrets-manager-endpoint`,
+		);
+
+		// for (const subnet of publicSubnets) {
+		// 	new ec2.CfnSubnetRouteTableAssociation(
+		// 		this,
+		// 		// `${idWithHyphen}public-subnet-${subnet.ref}-association`,
+		// 		`${idWithHyphen}public-subnet-${subnet.toString()}-association`,
+		// 		{
+		// 			subnetId: subnet.ref,
+		// 			routeTableId: publicRouteTable.ref,
+		// 		},
+		// 	);
+		// }
 	}
 }
