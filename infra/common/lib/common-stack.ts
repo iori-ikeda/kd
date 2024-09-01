@@ -35,6 +35,10 @@ export class CommonStack extends cdk.Stack {
 		);
 
 		// attach internet gateway to vpc
+		new ec2.CfnVPCGatewayAttachment(this, `${idWithHyphen}igw-attachment`, {
+			vpcId: vpc.vpcId,
+			internetGatewayId: internetGateway.ref,
+		});
 		// create route table for public subnets
 
 		// 65,536 個の ip アドレスを 32 個のサブネットに分割する
