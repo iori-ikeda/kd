@@ -202,7 +202,7 @@ export class CfnStack extends cdk.Stack {
 				taskDefinition,
 				desiredCount: 1,
 				assignPublicIp: true,
-				// securityGroups: [fargateServiceSG], // TODO: 動作確認してないのでコメントアウトしてる。sg を指定しても動くことの確認が取れたらアンコメント
+				securityGroups: [fargateServiceSG],
 				// vpcSubnets: {
 				// 	subnets: [
 				// 		ec2.Subnet.fromSubnetAttributes(
