@@ -148,8 +148,6 @@ export class CommonStack extends cdk.Stack {
 				return cfnApplicationSubnet;
 			},
 		);
-		// TODO: add NAT Gateway
-		// TODO: add route table association
 
 		subnets.push(...applicationSubnets);
 
