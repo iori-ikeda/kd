@@ -93,17 +93,10 @@ export class CommonStack extends cdk.Stack {
 			publicRouteTable,
 		);
 
-		const publicLoadBalancerSG = createPublicLoadBalancerSecurityGroup(
+		const { publicLoadBalancerSG, fargateServiceSG } = createSecurityGroups(
 			this,
 			idWithHyphen,
 			vpc,
-		);
-
-		const fargateServiceSG = createFargateServiceSecurityGroup(
-			this,
-			idWithHyphen,
-			vpc,
-			publicLoadBalancerSG,
 		);
 
 		const engressRouteTable = createEngressRouteTable(this, idWithHyphen, vpc);
@@ -518,4 +511,28 @@ const createFargateServiceSecurityGroup = (
 	Tags.of(fargateServiceSG).add("Name", `${idWithHyphen}fargate-service-sg`);
 
 	return fargateServiceSG;
+};
+
+const createSecurityGroups = (
+	scope: CommonStack,
+	idWithHyphen: string,
+	vpc: ec2.Vpc,
+) => {
+	const publicLoadBalancerSG = createPublicLoadBalancerSecurityGroup(
+		scope,
+		idWithHyphen,
+		vpc,
+	);
+
+	const fargateServiceSG = createFargateServiceSecurityGroup(
+		scope,
+		idWithHyphen,
+		vpc,
+		publicLoadBalancerSG,
+	);
+
+	return {
+		publicLoadBalancerSG,
+		fargateServiceSG,
+	};
 };
