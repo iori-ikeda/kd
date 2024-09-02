@@ -120,16 +120,12 @@ export class CommonStack extends cdk.Stack {
 
 		const engressRouteTable = createEngressRouteTable(this, idWithHyphen, vpc);
 
-		for (const subnet of egressSubnets) {
-			new ec2.CfnSubnetRouteTableAssociation(
-				this,
-				`${idWithHyphen}engress-${subnet.toString()}-association`,
-				{
-					routeTableId: engressRouteTable.ref,
-					subnetId: subnet.ref,
-				},
-			);
-		}
+		associateEgressSubnetsToEngressRouteTable(
+			this,
+			idWithHyphen,
+			egressSubnets,
+			engressRouteTable,
+		);
 
 		createVpcEndpoints(
 			this,
@@ -373,6 +369,26 @@ const associatePublicSubnetsToPublicRouteTable = (
 			},
 		);
 	}
+};
+
+const associateEgressSubnetsToEngressRouteTable = (
+	scope: CommonStack,
+	idWithHyphen: string,
+	egressSubnets: ec2.CfnSubnet[],
+	engressRouteTable: ec2.CfnRouteTable,
+) => {
+	for (const subnet of egressSubnets) {
+		new ec2.CfnSubnetRouteTableAssociation(
+			scope,
+			`${idWithHyphen}engress-${subnet.toString()}-association`,
+			{
+				subnetId: subnet.ref,
+				routeTableId: engressRouteTable.ref,
+			},
+		);
+	}
+
+	return engressRouteTable;
 };
 
 const createVpcEndpoints = (
