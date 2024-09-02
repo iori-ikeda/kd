@@ -99,16 +99,12 @@ export class CommonStack extends cdk.Stack {
 			vpc,
 		);
 
-		const fargateServiceSG = new ec2.SecurityGroup(
+		const fargateServiceSG = createFargateServiceSecurityGroup(
 			this,
-			`${idWithHyphen}fargate-service-sg`,
-			{
-				vpc,
-				securityGroupName: `${idWithHyphen}fargate-service-sg`,
-			},
+			idWithHyphen,
+			vpc,
+			publicLoadBalancerSG,
 		);
-		fargateServiceSG.addIngressRule(publicLoadBalancerSG, ec2.Port.tcp(80));
-		Tags.of(fargateServiceSG).add("Name", `${idWithHyphen}fargate-service-sg`);
 
 		const engressRouteTable = createEngressRouteTable(this, idWithHyphen, vpc);
 
@@ -501,4 +497,25 @@ const createPublicLoadBalancerSecurityGroup = (
 	);
 
 	return publicLoadBalancerSG;
+};
+
+const createFargateServiceSecurityGroup = (
+	scope: CommonStack,
+	idWithHyphen: string,
+	vpc: ec2.Vpc,
+	publicLoadBalancerSG: ec2.SecurityGroup,
+) => {
+	const fargateServiceSG = new ec2.SecurityGroup(
+		scope,
+		`${idWithHyphen}fargate-service-sg`,
+		{
+			vpc,
+			securityGroupName: `${idWithHyphen}fargate-service-sg`,
+		},
+	);
+
+	fargateServiceSG.addIngressRule(publicLoadBalancerSG, ec2.Port.tcp(80));
+	Tags.of(fargateServiceSG).add("Name", `${idWithHyphen}fargate-service-sg`);
+
+	return fargateServiceSG;
 };
