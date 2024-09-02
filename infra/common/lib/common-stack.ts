@@ -347,46 +347,36 @@ export class CommonStack extends cdk.Stack {
 		);
 		Tags.of(logsEndpoint).add("Name", `${idWithHyphen}logs-endpoint`);
 
-		const parameterStoreEndpoint = new ec2.CfnVPCEndpoint(
-			this,
-			`${idWithHyphen}parameter-store-endpoint`,
-			{
-				vpcId: vpc.vpcId,
-				serviceName: "com.amazonaws.ap-northeast-1.ssm",
-				vpcEndpointType: "Interface",
-				subnetIds: egressSubnets.map((subnet) => subnet.ref),
-			},
-		);
-		Tags.of(parameterStoreEndpoint).add(
-			"Name",
-			`${idWithHyphen}parameter-store-endpoint`,
-		);
+		// 必要になったらアンコメント
+		// const parameterStoreEndpoint = new ec2.CfnVPCEndpoint(
+		// 	this,
+		// 	`${idWithHyphen}parameter-store-endpoint`,
+		// 	{
+		// 		vpcId: vpc.vpcId,
+		// 		serviceName: "com.amazonaws.ap-northeast-1.ssm",
+		// 		vpcEndpointType: "Interface",
+		// 		subnetIds: egressSubnets.map((subnet) => subnet.ref),
+		// 	},
+		// );
+		// Tags.of(parameterStoreEndpoint).add(
+		// 	"Name",
+		// 	`${idWithHyphen}parameter-store-endpoint`,
+		// );
 
-		const secretsManagerEndpoint = new ec2.CfnVPCEndpoint(
-			this,
-			`${idWithHyphen}secrets-manager-endpoint`,
-			{
-				vpcId: vpc.vpcId,
-				serviceName: "com.amazonaws.ap-northeast-1.secretsmanager",
-				vpcEndpointType: "Interface",
-				subnetIds: egressSubnets.map((subnet) => subnet.ref),
-			},
-		);
-		Tags.of(secretsManagerEndpoint).add(
-			"Name",
-			`${idWithHyphen}secrets-manager-endpoint`,
-		);
-
-		// for (const subnet of publicSubnets) {
-		// 	new ec2.CfnSubnetRouteTableAssociation(
-		// 		this,
-		// 		// `${idWithHyphen}public-subnet-${subnet.ref}-association`,
-		// 		`${idWithHyphen}public-subnet-${subnet.toString()}-association`,
-		// 		{
-		// 			subnetId: subnet.ref,
-		// 			routeTableId: publicRouteTable.ref,
-		// 		},
-		// 	);
-		// }
+		// 必要になったらアンコメント
+		// const secretsManagerEndpoint = new ec2.CfnVPCEndpoint(
+		// 	this,
+		// 	`${idWithHyphen}secrets-manager-endpoint`,
+		// 	{
+		// 		vpcId: vpc.vpcId,
+		// 		serviceName: "com.amazonaws.ap-northeast-1.secretsmanager",
+		// 		vpcEndpointType: "Interface",
+		// 		subnetIds: egressSubnets.map((subnet) => subnet.ref),
+		// 	},
+		// );
+		// Tags.of(secretsManagerEndpoint).add(
+		// 	"Name",
+		// 	`${idWithHyphen}secrets-manager-endpoint`,
+		// );
 	}
 }
