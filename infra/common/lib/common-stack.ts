@@ -24,25 +24,12 @@ export class CommonStack extends cdk.Stack {
 
 		const internetGateway = createInternetGateway(this, idWithHyphen, vpc);
 
-		const publicRouteTable = new ec2.CfnRouteTable(
+		const publicRouteTable = createPublicRouteTable(
 			this,
-			`${idWithHyphen}public-route-table`,
-			{
-				vpcId: vpc.vpcId,
-				tags: [
-					{
-						key: "Name",
-						value: `${idWithHyphen}public-route-table`,
-					},
-				],
-			},
+			idWithHyphen,
+			vpc,
+			internetGateway,
 		);
-
-		new ec2.CfnRoute(this, `${idWithHyphen}public-route`, {
-			routeTableId: publicRouteTable.ref,
-			destinationCidrBlock: "0.0.0.0/0",
-			gatewayId: internetGateway.ref,
-		});
 
 		// 65,536 個の ip アドレスを 32 個のサブネットに分割する
 		// 1つのサブネットあたり 2048 個の ip アドレスを持つことになる
@@ -194,6 +181,35 @@ const createInternetGateway = (
 	});
 
 	return internetGateway;
+};
+
+const createPublicRouteTable = (
+	scope: CommonStack,
+	idWithHyphen: string,
+	vpc: ec2.Vpc,
+	internetGateway: ec2.CfnInternetGateway,
+) => {
+	const publicRouteTable = new ec2.CfnRouteTable(
+		scope,
+		`${idWithHyphen}public-route-table`,
+		{
+			vpcId: vpc.vpcId,
+			tags: [
+				{
+					key: "Name",
+					value: `${idWithHyphen}public-route-table`,
+				},
+			],
+		},
+	);
+
+	new ec2.CfnRoute(scope, `${idWithHyphen}public-route`, {
+		routeTableId: publicRouteTable.ref,
+		destinationCidrBlock: "0.0.0.0/0",
+		gatewayId: internetGateway.ref,
+	});
+
+	return publicRouteTable;
 };
 
 const createSubnets = (
