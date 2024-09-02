@@ -285,84 +285,109 @@ export class CommonStack extends cdk.Stack {
 			);
 		}
 
-		const ecrDkrEndpoint = new ec2.CfnVPCEndpoint(
+		createVpcEndpoints(
 			this,
-			`${idWithHyphen}ecr-dkr-endpoint`,
-			{
-				vpcId: vpc.vpcId,
-				serviceName: "com.amazonaws.ap-northeast-1.ecr.dkr",
-				vpcEndpointType: "Interface",
-				subnetIds: egressSubnets.map((subnet) => subnet.ref),
-			},
+			idWithHyphen,
+			vpc,
+			engressRouteTable,
+			egressSubnets,
 		);
-		Tags.of(ecrDkrEndpoint).add("Name", `${idWithHyphen}ecr-dkr-endpoint`);
-
-		const ecrApiEndpoint = new ec2.CfnVPCEndpoint(
-			this,
-			`${idWithHyphen}ecr-api-endpoint`,
-			{
-				vpcId: vpc.vpcId,
-				serviceName: "com.amazonaws.ap-northeast-1.ecr.api",
-				vpcEndpointType: "Interface",
-				subnetIds: egressSubnets.map((subnet) => subnet.ref),
-			},
-		);
-		Tags.of(ecrApiEndpoint).add("Name", `${idWithHyphen}ecr-api-endpoint`);
-
-		const s3Endpoint = new ec2.CfnVPCEndpoint(
-			this,
-			`${idWithHyphen}s3-endpoint`,
-			{
-				vpcId: vpc.vpcId,
-				serviceName: "com.amazonaws.ap-northeast-1.s3",
-				vpcEndpointType: "Gateway",
-				routeTableIds: [engressRouteTable.ref],
-			},
-		);
-		Tags.of(s3Endpoint).add("Name", `${idWithHyphen}s3-endpoint`); // FIX: Name tag を追加できてない
-
-		const logsEndpoint = new ec2.CfnVPCEndpoint(
-			this,
-			`${idWithHyphen}logs-endpoint`,
-			{
-				vpcId: vpc.vpcId,
-				serviceName: "com.amazonaws.ap-northeast-1.logs",
-				vpcEndpointType: "Interface",
-				subnetIds: egressSubnets.map((subnet) => subnet.ref),
-			},
-		);
-		Tags.of(logsEndpoint).add("Name", `${idWithHyphen}logs-endpoint`);
-
-		// 必要になったらアンコメント
-		// const parameterStoreEndpoint = new ec2.CfnVPCEndpoint(
-		// 	this,
-		// 	`${idWithHyphen}parameter-store-endpoint`,
-		// 	{
-		// 		vpcId: vpc.vpcId,
-		// 		serviceName: "com.amazonaws.ap-northeast-1.ssm",
-		// 		vpcEndpointType: "Interface",
-		// 		subnetIds: egressSubnets.map((subnet) => subnet.ref),
-		// 	},
-		// );
-		// Tags.of(parameterStoreEndpoint).add(
-		// 	"Name",
-		// 	`${idWithHyphen}parameter-store-endpoint`,
-		// );
-
-		// 必要になったらアンコメント
-		// const secretsManagerEndpoint = new ec2.CfnVPCEndpoint(
-		// 	this,
-		// 	`${idWithHyphen}secrets-manager-endpoint`,
-		// 	{
-		// 		vpcId: vpc.vpcId,
-		// 		serviceName: "com.amazonaws.ap-northeast-1.secretsmanager",
-		// 		vpcEndpointType: "Interface",
-		// 		subnetIds: egressSubnets.map((subnet) => subnet.ref),
-		// 	},
-		// );
-		// Tags.of(secretsManagerEndpoint).add(
-		// 	"Name",
-		// 	`${idWithHyphen}secrets-manager-endpoint`,
-		// );
 	}
 }
+
+const createVpcEndpoints = (
+	scope: CommonStack,
+	idWithHyphen: string,
+	vpc: ec2.Vpc,
+	engressRouteTable: ec2.CfnRouteTable,
+	egressSubnets: ec2.CfnSubnet[],
+) => {
+	const ecrDkrEndpoint = new ec2.CfnVPCEndpoint(
+		scope,
+		`${idWithHyphen}ecr-dkr-endpoint`,
+		{
+			vpcId: vpc.vpcId,
+			serviceName: "com.amazonaws.ap-northeast-1.ecr.dkr",
+			vpcEndpointType: "Interface",
+			subnetIds: egressSubnets.map((subnet) => subnet.ref),
+		},
+	);
+	Tags.of(ecrDkrEndpoint).add("Name", `${idWithHyphen}ecr-dkr-endpoint`);
+
+	const ecrApiEndpoint = new ec2.CfnVPCEndpoint(
+		scope,
+		`${idWithHyphen}ecr-api-endpoint`,
+		{
+			vpcId: vpc.vpcId,
+			serviceName: "com.amazonaws.ap-northeast-1.ecr.api",
+			vpcEndpointType: "Interface",
+			subnetIds: egressSubnets.map((subnet) => subnet.ref),
+		},
+	);
+	Tags.of(ecrApiEndpoint).add("Name", `${idWithHyphen}ecr-api-endpoint`);
+
+	const s3Endpoint = new ec2.CfnVPCEndpoint(
+		scope,
+		`${idWithHyphen}s3-endpoint`,
+		{
+			vpcId: vpc.vpcId,
+			serviceName: "com.amazonaws.ap-northeast-1.s3",
+			vpcEndpointType: "Gateway",
+			routeTableIds: [engressRouteTable.ref],
+		},
+	);
+	Tags.of(s3Endpoint).add("Name", `${idWithHyphen}s3-endpoint`);
+
+	const logsEndpoint = new ec2.CfnVPCEndpoint(
+		scope,
+		`${idWithHyphen}logs-endpoint`,
+		{
+			vpcId: vpc.vpcId,
+			serviceName: "com.amazonaws.ap-northeast-1.logs",
+			vpcEndpointType: "Interface",
+			subnetIds: egressSubnets.map((subnet) => subnet.ref),
+		},
+	);
+	Tags.of(logsEndpoint).add("Name", `${idWithHyphen}logs-endpoint`);
+
+	// 必要になったらアンコメント
+	// const parameterStoreEndpoint = new ec2.CfnVPCEndpoint(
+	// 	this,
+	// 	`${idWithHyphen}parameter-store-endpoint`,
+	// 	{
+	// 		vpcId: vpc.vpcId,
+	// 		serviceName: "com.amazonaws.ap-northeast-1.ssm",
+	// 		vpcEndpointType: "Interface",
+	// 		subnetIds: egressSubnets.map((subnet) => subnet.ref),
+	// 	},
+	// );
+	// Tags.of(parameterStoreEndpoint).add(
+	// 	"Name",
+	// 	`${idWithHyphen}parameter-store-endpoint`,
+	// );
+
+	// 必要になったらアンコメント
+	// const secretsManagerEndpoint = new ec2.CfnVPCEndpoint(
+	// 	this,
+	// 	`${idWithHyphen}secrets-manager-endpoint`,
+	// 	{
+	// 		vpcId: vpc.vpcId,
+	// 		serviceName: "com.amazonaws.ap-northeast-1.secretsmanager",
+	// 		vpcEndpointType: "Interface",
+	// 		subnetIds: egressSubnets.map((subnet) => subnet.ref),
+	// 	},
+	// );
+	// Tags.of(secretsManagerEndpoint).add(
+	// 	"Name",
+	// 	`${idWithHyphen}secrets-manager-endpoint`,
+	// );
+
+	return {
+		ecrDkrEndpoint,
+		ecrApiEndpoint,
+		s3Endpoint,
+		logsEndpoint,
+		// parameterStoreEndpoint,
+		// secretsManagerEndpoint,
+	};
+};
