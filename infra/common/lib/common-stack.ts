@@ -227,7 +227,6 @@ export class CommonStack extends cdk.Stack {
 		for (const subnet of publicSubnets) {
 			new ec2.CfnSubnetRouteTableAssociation(
 				this,
-				// `${idWithHyphen}public-subnet-${subnet.ref}-association`,
 				`${idWithHyphen}public-subnet-${subnet.toString()}-association`,
 				{
 					subnetId: subnet.ref,
@@ -260,19 +259,6 @@ export class CommonStack extends cdk.Stack {
 		);
 		fargateServiceSG.addIngressRule(publicLoadBalancerSG, ec2.Port.tcp(80));
 		Tags.of(fargateServiceSG).add("Name", `${idWithHyphen}fargate-service-sg`);
-
-		// create VPC endpoint for fargate service
-		//
-		// needed vpc endpoints
-		// interface endpoint
-		// - ECR
-		//   -
-		// - CloudWatch Logs
-		// - Parameter Store
-		// - Secrets Manager
-		// gateway endpoint
-		// - S3
-		//
 
 		const engressRouteTable = new ec2.CfnRouteTable(
 			this,
