@@ -22,23 +22,7 @@ export class CommonStack extends cdk.Stack {
 			enableDnsSupport: true,
 		});
 
-		const internetGateway = new ec2.CfnInternetGateway(
-			this,
-			`${idWithHyphen}igw`,
-			{
-				tags: [
-					{
-						key: "Name",
-						value: `${idWithHyphen}igw`,
-					},
-				],
-			},
-		);
-
-		new ec2.CfnVPCGatewayAttachment(this, `${idWithHyphen}igw-attachment`, {
-			vpcId: vpc.vpcId,
-			internetGatewayId: internetGateway.ref,
-		});
+		const internetGateway = createInternetGateway(this, idWithHyphen, vpc);
 
 		const publicRouteTable = new ec2.CfnRouteTable(
 			this,
@@ -185,6 +169,32 @@ export class CommonStack extends cdk.Stack {
 		);
 	}
 }
+
+const createInternetGateway = (
+	scope: CommonStack,
+	idWithHyphen: string,
+	vpc: ec2.Vpc,
+) => {
+	const internetGateway = new ec2.CfnInternetGateway(
+		scope,
+		`${idWithHyphen}igw`,
+		{
+			tags: [
+				{
+					key: "Name",
+					value: `${idWithHyphen}igw`,
+				},
+			],
+		},
+	);
+
+	new ec2.CfnVPCGatewayAttachment(scope, `${idWithHyphen}igw-attachment`, {
+		vpcId: vpc.vpcId,
+		internetGatewayId: internetGateway.ref,
+	});
+
+	return internetGateway;
+};
 
 const createSubnets = (
 	scope: CommonStack,
