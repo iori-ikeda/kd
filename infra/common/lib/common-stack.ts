@@ -98,129 +98,22 @@ export class CommonStack extends cdk.Stack {
 		];
 		const availabilityZones = ["a", "c", "d"];
 
-		const subnets: ec2.CfnSubnet[] = [];
-		let publicSubnets: ec2.CfnSubnet[] = [];
-		let privateSubnets: ec2.CfnSubnet[] = [];
-
-		// Ingress 用の public subnet を2つの AZ に作成する
-		const ingressSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
-		const ingressSubnets = ingressSubnetCiderBlocks.map((cidrBlock, index) => {
-			const nth = index + 1;
-			const cfnIngressSubnet = new cdk.aws_ec2.CfnSubnet(
-				this,
-				`${idWithHyphen}ingress-subnet-${nth}`,
-				{
-					cidrBlock,
-					availabilityZone: `${this.region}${availabilityZones[index]}`,
-					vpcId: vpc.vpcId,
-					mapPublicIpOnLaunch: true,
-				},
-			);
-			Tags.of(cfnIngressSubnet).add(
-				"Name",
-				`${idWithHyphen}ingress-subnet-${nth}`,
-			);
-
-			return cfnIngressSubnet;
-		});
-		subnets.push(...ingressSubnets);
-
-		// application 用の private subnet を2つの AZ に作成する
-		const applicationSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
-		const applicationSubnets = applicationSubnetCiderBlocks.map(
-			(cidrBlock, index) => {
-				const nth = index + 1;
-				const cfnApplicationSubnet = new cdk.aws_ec2.CfnSubnet(
-					this,
-					`${idWithHyphen}application-subnet-${nth}`,
-					{
-						cidrBlock,
-						availabilityZone: `${this.region}${availabilityZones[index]}`,
-						vpcId: vpc.vpcId,
-						mapPublicIpOnLaunch: false,
-					},
-				);
-				Tags.of(cfnApplicationSubnet).add(
-					"Name",
-					`${idWithHyphen}application-subnet-${nth}`,
-				);
-
-				return cfnApplicationSubnet;
-			},
+		const {
+			ingressSubnets,
+			applicationSubnets,
+			dbSubnets,
+			managementSubnets,
+			egressSubnets,
+			publicSubnets,
+			privateSubnets,
+			subnets,
+		} = createSubnets(
+			this,
+			idWithHyphen,
+			vpc,
+			subnetCiderBlocks,
+			availabilityZones,
 		);
-
-		subnets.push(...applicationSubnets);
-
-		// db 用の private subnet を2つの AZ に作成する
-		const dbSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
-		const dbSubnets = dbSubnetCiderBlocks.map((cidrBlock, index) => {
-			const nth = index + 1;
-			const cfnDbSubnet = new cdk.aws_ec2.CfnSubnet(
-				this,
-				`${idWithHyphen}db-subnet-${nth}`,
-				{
-					cidrBlock,
-					availabilityZone: `${this.region}${availabilityZones[index]}`,
-					vpcId: vpc.vpcId,
-					mapPublicIpOnLaunch: false,
-				},
-			);
-			Tags.of(cfnDbSubnet).add("Name", `${idWithHyphen}db-subnet-${nth}`);
-
-			return cfnDbSubnet;
-		});
-		subnets.push(...dbSubnets);
-
-		// 管理用の private subnet を2つの AZ に作成する
-		const managementSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
-		const managementSubnets = managementSubnetCiderBlocks.map(
-			(cidrBlock, index) => {
-				const nth = index + 1;
-				const cfnManagementSubnet = new cdk.aws_ec2.CfnSubnet(
-					this,
-					`${idWithHyphen}management-subnet-${nth}`,
-					{
-						cidrBlock,
-						availabilityZone: `${this.region}${availabilityZones[index]}`,
-						vpcId: vpc.vpcId,
-						mapPublicIpOnLaunch: false,
-					},
-				);
-				Tags.of(cfnManagementSubnet).add(
-					"Name",
-					`${idWithHyphen}management-subnet-${nth}`,
-				);
-
-				return cfnManagementSubnet;
-			},
-		);
-		subnets.push(...managementSubnets);
-
-		// egress 用の private subnet を2つの AZ に作成する
-		const egressSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
-		const egressSubnets = egressSubnetCiderBlocks.map((cidrBlock, index) => {
-			const nth = index + 1;
-			const cfnEgressSubnet = new cdk.aws_ec2.CfnSubnet(
-				this,
-				`${idWithHyphen}egress-subnet-${nth}`,
-				{
-					cidrBlock,
-					availabilityZone: `${this.region}${availabilityZones[index]}`,
-					vpcId: vpc.vpcId,
-					mapPublicIpOnLaunch: false,
-				},
-			);
-			Tags.of(cfnEgressSubnet).add(
-				"Name",
-				`${idWithHyphen}egress-subnet-${nth}`,
-			);
-
-			return cfnEgressSubnet;
-		});
-		subnets.push(...egressSubnets);
-
-		publicSubnets = subnets.filter((subnet) => subnet.mapPublicIpOnLaunch);
-		privateSubnets = subnets.filter((subnet) => !subnet.mapPublicIpOnLaunch);
 
 		for (const subnet of publicSubnets) {
 			new ec2.CfnSubnetRouteTableAssociation(
@@ -292,6 +185,145 @@ export class CommonStack extends cdk.Stack {
 		);
 	}
 }
+
+const createSubnets = (
+	scope: CommonStack,
+	idWithHyphen: string,
+	vpc: ec2.Vpc,
+	subnetCiderBlocks: string[],
+	availabilityZones: string[],
+) => {
+	const subnets: ec2.CfnSubnet[] = [];
+	let publicSubnets: ec2.CfnSubnet[] = [];
+	let privateSubnets: ec2.CfnSubnet[] = [];
+
+	// Ingress 用の public subnet を2つの AZ に作成する
+	const ingressSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
+	const ingressSubnets = ingressSubnetCiderBlocks.map((cidrBlock, index) => {
+		const nth = index + 1;
+		const cfnIngressSubnet = new cdk.aws_ec2.CfnSubnet(
+			scope,
+			`${idWithHyphen}ingress-subnet-${nth}`,
+			{
+				cidrBlock,
+				availabilityZone: `${scope.region}${availabilityZones[index]}`,
+				vpcId: vpc.vpcId,
+				mapPublicIpOnLaunch: true,
+			},
+		);
+		Tags.of(cfnIngressSubnet).add(
+			"Name",
+			`${idWithHyphen}ingress-subnet-${nth}`,
+		);
+
+		return cfnIngressSubnet;
+	});
+	subnets.push(...ingressSubnets);
+
+	// application 用の private subnet を2つの AZ に作成する
+	const applicationSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
+	const applicationSubnets = applicationSubnetCiderBlocks.map(
+		(cidrBlock, index) => {
+			const nth = index + 1;
+			const cfnApplicationSubnet = new cdk.aws_ec2.CfnSubnet(
+				scope,
+				`${idWithHyphen}application-subnet-${nth}`,
+				{
+					cidrBlock,
+					availabilityZone: `${scope.region}${availabilityZones[index]}`,
+					vpcId: vpc.vpcId,
+					mapPublicIpOnLaunch: false,
+				},
+			);
+			Tags.of(cfnApplicationSubnet).add(
+				"Name",
+				`${idWithHyphen}application-subnet-${nth}`,
+			);
+
+			return cfnApplicationSubnet;
+		},
+	);
+	subnets.push(...applicationSubnets);
+
+	// db 用の private subnet を2つの AZ に作成する
+	const dbSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
+	const dbSubnets = dbSubnetCiderBlocks.map((cidrBlock, index) => {
+		const nth = index + 1;
+		const cfnDbSubnet = new cdk.aws_ec2.CfnSubnet(
+			scope,
+			`${idWithHyphen}db-subnet-${nth}`,
+			{
+				cidrBlock,
+				availabilityZone: `${scope.region}${availabilityZones[index]}`,
+				vpcId: vpc.vpcId,
+				mapPublicIpOnLaunch: false,
+			},
+		);
+		Tags.of(cfnDbSubnet).add("Name", `${idWithHyphen}db-subnet-${nth}`);
+
+		return cfnDbSubnet;
+	});
+	subnets.push(...dbSubnets);
+
+	// 管理用の private subnet を2つの AZ に作成する
+	const managementSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
+	const managementSubnets = managementSubnetCiderBlocks.map(
+		(cidrBlock, index) => {
+			const nth = index + 1;
+			const cfnManagementSubnet = new cdk.aws_ec2.CfnSubnet(
+				scope,
+				`${idWithHyphen}management-subnet-${nth}`,
+				{
+					cidrBlock,
+					availabilityZone: `${scope.region}${availabilityZones[index]}`,
+					vpcId: vpc.vpcId,
+					mapPublicIpOnLaunch: false,
+				},
+			);
+			Tags.of(cfnManagementSubnet).add(
+				"Name",
+				`${idWithHyphen}management-subnet-${nth}`,
+			);
+
+			return cfnManagementSubnet;
+		},
+	);
+	subnets.push(...managementSubnets);
+
+	// egress 用の private subnet を2つの AZ に作成する
+	const egressSubnetCiderBlocks = subnetCiderBlocks.splice(0, 2);
+	const egressSubnets = egressSubnetCiderBlocks.map((cidrBlock, index) => {
+		const nth = index + 1;
+		const cfnEgressSubnet = new cdk.aws_ec2.CfnSubnet(
+			scope,
+			`${idWithHyphen}egress-subnet-${nth}`,
+			{
+				cidrBlock,
+				availabilityZone: `${scope.region}${availabilityZones[index]}`,
+				vpcId: vpc.vpcId,
+				mapPublicIpOnLaunch: false,
+			},
+		);
+		Tags.of(cfnEgressSubnet).add("Name", `${idWithHyphen}egress-subnet-${nth}`);
+
+		return cfnEgressSubnet;
+	});
+	subnets.push(...egressSubnets);
+
+	publicSubnets = subnets.filter((subnet) => subnet.mapPublicIpOnLaunch);
+	privateSubnets = subnets.filter((subnet) => !subnet.mapPublicIpOnLaunch);
+
+	return {
+		ingressSubnets,
+		applicationSubnets,
+		dbSubnets,
+		managementSubnets,
+		egressSubnets,
+		publicSubnets,
+		privateSubnets,
+		subnets,
+	};
+};
 
 const createVpcEndpoints = (
 	scope: CommonStack,
