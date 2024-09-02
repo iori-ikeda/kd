@@ -86,16 +86,12 @@ export class CommonStack extends cdk.Stack {
 			availabilityZones,
 		);
 
-		for (const subnet of publicSubnets) {
-			new ec2.CfnSubnetRouteTableAssociation(
-				this,
-				`${idWithHyphen}public-subnet-${subnet.toString()}-association`,
-				{
-					subnetId: subnet.ref,
-					routeTableId: publicRouteTable.ref,
-				},
-			);
-		}
+		associatePublicSubnetsToPublicRouteTable(
+			this,
+			idWithHyphen,
+			publicSubnets,
+			publicRouteTable,
+		);
 
 		const publicLoadBalancerSG = new ec2.SecurityGroup(
 			this,
@@ -349,6 +345,24 @@ const createSubnets = (
 		privateSubnets,
 		subnets,
 	};
+};
+
+const associatePublicSubnetsToPublicRouteTable = (
+	scope: CommonStack,
+	idWithHyphen: string,
+	publicSubnets: ec2.CfnSubnet[],
+	publicRouteTable: ec2.CfnRouteTable,
+) => {
+	for (const subnet of publicSubnets) {
+		new ec2.CfnSubnetRouteTableAssociation(
+			scope,
+			`${idWithHyphen}public-subnet-${subnet.toString()}-association`,
+			{
+				subnetId: subnet.ref,
+				routeTableId: publicRouteTable.ref,
+			},
+		);
+	}
 };
 
 const createVpcEndpoints = (
