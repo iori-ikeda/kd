@@ -118,19 +118,7 @@ export class CommonStack extends cdk.Stack {
 		fargateServiceSG.addIngressRule(publicLoadBalancerSG, ec2.Port.tcp(80));
 		Tags.of(fargateServiceSG).add("Name", `${idWithHyphen}fargate-service-sg`);
 
-		const engressRouteTable = new ec2.CfnRouteTable(
-			this,
-			`${idWithHyphen}engress-route-table`,
-			{
-				vpcId: vpc.vpcId,
-				tags: [
-					{
-						key: "Name",
-						value: `${idWithHyphen}engress-route-table`,
-					},
-				],
-			},
-		);
+		const engressRouteTable = createEngressRouteTable(this, idWithHyphen, vpc);
 
 		for (const subnet of egressSubnets) {
 			new ec2.CfnSubnetRouteTableAssociation(
@@ -206,6 +194,28 @@ const createPublicRouteTable = (
 	});
 
 	return publicRouteTable;
+};
+
+const createEngressRouteTable = (
+	scope: CommonStack,
+	idWithHyphen: string,
+	vpc: ec2.Vpc,
+) => {
+	const engressRouteTable = new ec2.CfnRouteTable(
+		scope,
+		`${idWithHyphen}engress-route-table`,
+		{
+			vpcId: vpc.vpcId,
+			tags: [
+				{
+					key: "Name",
+					value: `${idWithHyphen}engress-route-table`,
+				},
+			],
+		},
+	);
+
+	return engressRouteTable;
 };
 
 const createSubnets = (
