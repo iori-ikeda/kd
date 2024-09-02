@@ -31,7 +31,11 @@ export const getConfig = (
 				subnets: json.ecs.fargateService.subnets,
 			},
 		},
+		route53: {
+			zoneName: json.route53.zoneName,
+		},
 		alb: {
+			domain: json.alb.domain,
 			subnets: json.alb.subnets,
 			securityGroupId: json.alb.securityGroupId,
 			listener: json.alb.listener,
@@ -44,6 +48,7 @@ export interface Config {
 	account: AccountConfig;
 	vpc: VpcConfig;
 	ecs: EcsConfig;
+	route53: Route53Config;
 	alb: AlbConfig;
 }
 
@@ -78,7 +83,12 @@ interface EcsConfig {
 	};
 }
 
+interface Route53Config {
+	zoneName: string;
+}
+
 interface AlbConfig {
+	domain: string; // route53 のドメイン名
 	subnets: Array<{
 		subnetId: string;
 		availabilityZone: string;

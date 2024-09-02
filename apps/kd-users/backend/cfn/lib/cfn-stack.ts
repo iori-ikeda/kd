@@ -8,6 +8,8 @@ import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as acm from "aws-cdk-lib/aws-certificatemanager";
 import * as logs from "aws-cdk-lib/aws-logs";
+import * as route53 from "aws-cdk-lib/aws-route53";
+import * as targets from "aws-cdk-lib/aws-route53-targets";
 
 export class CfnStack extends cdk.Stack {
 	constructor(
@@ -109,6 +111,22 @@ export class CfnStack extends cdk.Stack {
 				defaultTargetGroups: [targetGroup],
 			},
 		);
+
+		const hostZone = route53.HostedZone.fromLookup(
+			this,
+			`${idWithHyphen}host-zone`,
+			{
+				domainName: config.route53.zoneName,
+			},
+		);
+		new route53.ARecord(this, `${idWithHyphen}alb-record`, {
+			region: this.region,
+			recordName: config.alb.domain,
+			target: route53.RecordTarget.fromAlias(
+				new targets.LoadBalancerTarget(alb),
+			),
+			zone: hostZone,
+		});
 
 		const ecsCluster = new ecs.Cluster(this, `${idWithHyphen}cluster`, {
 			clusterName: `${idWithHyphen}cluster`,
