@@ -62,13 +62,13 @@ export class CommonStack extends cdk.Stack {
 
 		const internetGateway = createInternetGateway(this, idWithHyphen, vpc);
 
-		const publicRouteTable = createPublicRouteTable(
+		const { publicRouteTable, engressRouteTable } = createRouteTables(
 			this,
 			idWithHyphen,
 			vpc,
+			availabilityZones,
 			internetGateway,
 		);
-		const engressRouteTable = createEngressRouteTable(this, idWithHyphen, vpc);
 
 		const {
 			ingressSubnets,
@@ -192,6 +192,28 @@ const createEngressRouteTable = (
 	);
 
 	return engressRouteTable;
+};
+
+const createRouteTables = (
+	scope: CommonStack,
+	idWithHyphen: string,
+	vpc: ec2.Vpc,
+	availabilityZones: string[],
+	internetGateway: ec2.CfnInternetGateway,
+) => {
+	const publicRouteTable = createPublicRouteTable(
+		scope,
+		idWithHyphen,
+		vpc,
+		internetGateway,
+	);
+
+	const engressRouteTable = createEngressRouteTable(scope, idWithHyphen, vpc);
+
+	return {
+		publicRouteTable,
+		engressRouteTable,
+	};
 };
 
 const createSubnets = (
