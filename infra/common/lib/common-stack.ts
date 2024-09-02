@@ -22,15 +22,6 @@ export class CommonStack extends cdk.Stack {
 			enableDnsSupport: true,
 		});
 
-		const internetGateway = createInternetGateway(this, idWithHyphen, vpc);
-
-		const publicRouteTable = createPublicRouteTable(
-			this,
-			idWithHyphen,
-			vpc,
-			internetGateway,
-		);
-
 		// 65,536 個の ip アドレスを 32 個のサブネットに分割する
 		// 1つのサブネットあたり 2048 個の ip アドレスを持つことになる
 		const subnetCiderBlocks = [
@@ -69,6 +60,16 @@ export class CommonStack extends cdk.Stack {
 		];
 		const availabilityZones = ["a", "c", "d"];
 
+		const internetGateway = createInternetGateway(this, idWithHyphen, vpc);
+
+		const publicRouteTable = createPublicRouteTable(
+			this,
+			idWithHyphen,
+			vpc,
+			internetGateway,
+		);
+		const engressRouteTable = createEngressRouteTable(this, idWithHyphen, vpc);
+
 		const {
 			ingressSubnets,
 			applicationSubnets,
@@ -93,19 +94,17 @@ export class CommonStack extends cdk.Stack {
 			publicRouteTable,
 		);
 
-		const { publicLoadBalancerSG, fargateServiceSG } = createSecurityGroups(
-			this,
-			idWithHyphen,
-			vpc,
-		);
-
-		const engressRouteTable = createEngressRouteTable(this, idWithHyphen, vpc);
-
 		associateEgressSubnetsToEngressRouteTable(
 			this,
 			idWithHyphen,
 			egressSubnets,
 			engressRouteTable,
+		);
+
+		const { publicLoadBalancerSG, fargateServiceSG } = createSecurityGroups(
+			this,
+			idWithHyphen,
+			vpc,
 		);
 
 		createVpcEndpoints(
