@@ -96,11 +96,8 @@ export class CommonStack extends cdk.Stack {
 			engressRouteTable,
 		);
 
-		const { publicLoadBalancerSG, fargateServiceSG } = createSecurityGroups(
-			this,
-			idWithHyphen,
-			vpc,
-		);
+		const { publicLoadBalancerSG, fargateServiceSG, rdsSG } =
+			createSecurityGroups(this, idWithHyphen, vpc);
 
 		createVpcEndpoints(
 			this,
@@ -455,6 +452,23 @@ const createFargateServiceSecurityGroup = (
 	return fargateServiceSG;
 };
 
+const createRdsSecurityGroup = (
+	scope: CommonStack,
+	idWithHyphen: string,
+	vpc: ec2.Vpc,
+	fargateServiceSG: ec2.SecurityGroup,
+) => {
+	const rdsSG = new ec2.SecurityGroup(scope, `${idWithHyphen}rds-sg`, {
+		vpc,
+		securityGroupName: `${idWithHyphen}rds-sg`,
+	});
+
+	rdsSG.addIngressRule(fargateServiceSG, ec2.Port.tcp(3306));
+	Tags.of(rdsSG).add("Name", `${idWithHyphen}rds-sg`);
+
+	return rdsSG;
+};
+
 const createSecurityGroups = (
 	scope: CommonStack,
 	idWithHyphen: string,
@@ -473,9 +487,17 @@ const createSecurityGroups = (
 		publicLoadBalancerSG,
 	);
 
+	const rdsSG = createRdsSecurityGroup(
+		scope,
+		idWithHyphen,
+		vpc,
+		fargateServiceSG,
+	);
+
 	return {
 		publicLoadBalancerSG,
 		fargateServiceSG,
+		rdsSG,
 	};
 };
 
