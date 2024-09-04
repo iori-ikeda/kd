@@ -10,6 +10,7 @@ import * as acm from "aws-cdk-lib/aws-certificatemanager";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as route53 from "aws-cdk-lib/aws-route53";
 import * as targets from "aws-cdk-lib/aws-route53-targets";
+import * as rds from "aws-cdk-lib/aws-rds";
 
 export class CfnStack extends cdk.Stack {
 	constructor(
@@ -231,5 +232,98 @@ export class CfnStack extends cdk.Stack {
 		);
 
 		fargateService.attachToApplicationTargetGroup(targetGroup);
+
+		const rdsSG = ec2.SecurityGroup.fromSecurityGroupId(
+			this,
+			`${idWithHyphen}rds-sg`,
+			config.rds.securityGroupId,
+		);
+
+		const engine = rds.DatabaseClusterEngine.auroraMysql({
+			version: rds.AuroraMysqlEngineVersion.VER_3_07_1,
+		});
+
+		const dbClusterParameterGroup = new rds.ParameterGroup(
+			this,
+			`${idWithHyphen}db-cluster-parameter-group`,
+			{
+				engine,
+				parameters: {
+					character_set_client: "utf8mb4",
+					character_set_connection: "utf8mb4",
+					character_set_database: "utf8mb4",
+					character_set_results: "utf8mb4",
+					character_set_server: "utf8mb4",
+					collation_server: "utf8mb4_unicode_ci",
+					collation_connection: "utf8mb4_unicode_ci",
+					character_set_filesystem: "utf8mb4",
+					general_log: "1",
+					slow_query_log: "1",
+					long_query_time: "2",
+				},
+			},
+		);
+
+		const dbInstanceParameterGroup = new rds.ParameterGroup(
+			this,
+			`${idWithHyphen}db-instance-parameter-group`,
+			{
+				engine,
+				parameters: {},
+			},
+		);
+
+		const rdsSubnets = vpc.selectSubnets({
+			subnets: [
+				ec2.Subnet.fromSubnetAttributes(this, `${idWithHyphen}rds-subnet-1`, {
+					subnetId: config.rds.subnets[0].subnetId,
+					availabilityZone: config.rds.subnets[0].availabilityZone,
+				}),
+				ec2.Subnet.fromSubnetAttributes(this, `${idWithHyphen}rds-subnet-2`, {
+					subnetId: config.rds.subnets[1].subnetId,
+					availabilityZone: config.rds.subnets[1].availabilityZone,
+				}),
+			],
+		});
+
+		const rdsSubnetGroup = new rds.SubnetGroup(
+			this,
+			`${idWithHyphen}rds-subnet-group`,
+			{
+				subnetGroupName: `${idWithHyphen}rds-subnet-group`,
+				description: `${idWithHyphen}rds-subnet-group`,
+				vpc,
+				vpcSubnets: rdsSubnets,
+			},
+		);
+
+		const dbCluster = new rds.DatabaseCluster(
+			this,
+			`${idWithHyphen}db-cluster`,
+			{
+				vpc,
+				clusterIdentifier: `${idWithHyphen}db-cluster`,
+				engine,
+				parameterGroup: dbClusterParameterGroup,
+				cloudwatchLogsExports: ["general", "slowquery"],
+				defaultDatabaseName: id.replace(/-/g, "_"),
+				subnetGroup: rdsSubnetGroup,
+				writer: cdk.aws_rds.ClusterInstance.provisioned(
+					`${idWithHyphen}rds-writer-instance`,
+					{
+						instanceIdentifier: `${idWithHyphen}rds-writer-instance`,
+						instanceType: ec2.InstanceType.of(
+							ec2.InstanceClass.T3,
+							ec2.InstanceSize.MEDIUM,
+						),
+						parameterGroup: dbInstanceParameterGroup,
+					},
+				),
+				readers: [],
+				storageEncrypted: true,
+				removalPolicy: cdk.RemovalPolicy.DESTROY, // 本来なら RETAIN にすべき。コスト削減のために、cdk destroy を頻繁に行う予定があるためこの値にしてある。
+				securityGroups: [rdsSG],
+			},
+		);
 	}
 }
