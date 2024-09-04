@@ -74,7 +74,7 @@ export class CfnStack extends cdk.Stack {
 			vpc,
 			internetFacing: true,
 			vpcSubnets: ingressSubnets,
-			// securityGroup: publicLoadBalancerSG,
+			securityGroup: publicLoadBalancerSG,
 		});
 
 		const targetGroup = new elbv2.ApplicationTargetGroup(
