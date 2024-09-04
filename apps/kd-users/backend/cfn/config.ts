@@ -40,6 +40,10 @@ export const getConfig = (
 			securityGroupId: json.alb.securityGroupId,
 			listener: json.alb.listener,
 		},
+		rds: {
+			subnets: json.rds.subnets,
+			securityGroupId: json.rds.securityGroupId,
+		},
 	};
 };
 
@@ -50,6 +54,7 @@ export interface Config {
 	ecs: EcsConfig;
 	route53: Route53Config;
 	alb: AlbConfig;
+	rds: RdsConfig;
 }
 
 interface AccountConfig {
@@ -111,4 +116,12 @@ interface ListenerTargetGroupConfig {
 		path: string;
 		healthyHttpCodes: string;
 	};
+}
+
+interface RdsConfig {
+	subnets: Array<{
+		subnetId: string;
+		availabilityZone: string;
+	}>;
+	securityGroupId: string;
 }
