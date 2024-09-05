@@ -8,16 +8,16 @@ import (
 )
 
 type UserHandler struct {
-	listUserUseCase useCase.IListUsersUseCase
 	createUserUseCase useCase.ICreateUserUseCase
+	listUserUseCase   useCase.IListUsersUseCase
 	updateUserUseCase useCase.IUpdateUserUseCase
 	deleteUserUseCase useCase.IDeleteUserUseCase
 }
 
-func NewUserHandler(listUserUseCase useCase.IListUsersUseCase, createUserUseCase useCase.ICreateUserUseCase, updateUserUseCase useCase.IUpdateUserUseCase, deleteUserUseCase useCase.IDeleteUserUseCase) UserHandler {
+func NewUserHandler(createUserUseCase useCase.ICreateUserUseCase, listUserUseCase useCase.IListUsersUseCase, updateUserUseCase useCase.IUpdateUserUseCase, deleteUserUseCase useCase.IDeleteUserUseCase) UserHandler {
 	return UserHandler{
-		listUserUseCase: listUserUseCase,
 		createUserUseCase: createUserUseCase,
+		listUserUseCase:   listUserUseCase,
 		updateUserUseCase: updateUserUseCase,
 		deleteUserUseCase: deleteUserUseCase,
 	}
@@ -46,7 +46,7 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
-	ID string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -66,7 +66,7 @@ func (h UserHandler) CreateUser(c echo.Context) error {
 	}
 
 	resp := CreateUserResponse{
-		ID: output.ID,
+		ID:   output.ID,
 		Name: req.Name,
 	}
 
@@ -89,7 +89,7 @@ func (h UserHandler) UpdateUser(c echo.Context) error {
 
 	id := c.Param("id")
 	input := useCase.UpdateUserInput{
-		ID: id,
+		ID:   id,
 		Name: req.Name,
 	}
 
@@ -123,4 +123,3 @@ func (h UserHandler) DeleteUser(c echo.Context) error {
 
 	return c.NoContent(204)
 }
-
