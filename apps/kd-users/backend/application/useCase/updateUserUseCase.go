@@ -14,6 +14,7 @@ type UpdateUserUseCase struct {
 
 type UpdateUserInput struct {
 	ID string
+	Name string
 }
 
 type UpdateUserOutput struct {
@@ -29,5 +30,13 @@ func (u UpdateUserUseCase) Execute(input UpdateUserInput) (UpdateUserOutput, err
 	if err != nil {
 		return UpdateUserOutput{}, err
 	}
+
+	user.Update(input.Name)
+
+	err = u.userRepository.Save(user)
+	if err != nil {
+		return UpdateUserOutput{}, err
+	}
+
 	return UpdateUserOutput{ID: user.ID}, nil
 }
