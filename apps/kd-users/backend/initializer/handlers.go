@@ -14,6 +14,7 @@ func initHandlers(
 ) Handlers {
 	userHandler := handler.NewUserHandler(
 		usecases.CreateUserUseCase,
+		usecases.GetUserUseCase,
 		usecases.ListUsersUseCase,
 		usecases.UpdateUserUseCase,
 		usecases.DeleteUserUseCase,

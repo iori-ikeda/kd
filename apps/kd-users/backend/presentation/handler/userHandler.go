@@ -9,18 +9,49 @@ import (
 
 type UserHandler struct {
 	createUserUseCase useCase.ICreateUserUseCase
+	getUserUseCase    useCase.IGetUserUseCase
 	listUserUseCase   useCase.IListUsersUseCase
 	updateUserUseCase useCase.IUpdateUserUseCase
 	deleteUserUseCase useCase.IDeleteUserUseCase
 }
 
-func NewUserHandler(createUserUseCase useCase.ICreateUserUseCase, listUserUseCase useCase.IListUsersUseCase, updateUserUseCase useCase.IUpdateUserUseCase, deleteUserUseCase useCase.IDeleteUserUseCase) UserHandler {
+func NewUserHandler(
+	createUserUseCase useCase.ICreateUserUseCase,
+	getUserUseCase useCase.IGetUserUseCase,
+	listUserUseCase useCase.IListUsersUseCase,
+	updateUserUseCase useCase.IUpdateUserUseCase,
+	deleteUserUseCase useCase.IDeleteUserUseCase,
+) UserHandler {
 	return UserHandler{
 		createUserUseCase: createUserUseCase,
+		getUserUseCase:    getUserUseCase,
 		listUserUseCase:   listUserUseCase,
 		updateUserUseCase: updateUserUseCase,
 		deleteUserUseCase: deleteUserUseCase,
 	}
+}
+
+type GetUserResponse struct {
+	User userModel.User `json:"user"`
+}
+
+func (h UserHandler) GetUser(c echo.Context) error {
+	id := c.Param("id")
+
+	input := useCase.GetUserInput{
+		ID: id,
+	}
+
+	output, err := h.getUserUseCase.Execute(input)
+	if err != nil {
+		return c.JSON(400, map[string]string{"error": err.Error()})
+	}
+
+	resp := GetUserResponse{
+		User: output.User,
+	}
+
+	return c.JSON(200, resp)
 }
 
 type ListUsersResponse struct {
