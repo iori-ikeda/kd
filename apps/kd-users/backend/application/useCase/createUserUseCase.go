@@ -6,11 +6,15 @@ import (
 )
 
 type ICreateUserUseCase interface {
-	Execute() (CreateUserOutput, error)
+	Execute(input CreateUserInput) (CreateUserOutput, error)
 }
 
 type CreateUserUseCase struct {
 	userRepository domain.IUserRepository
+}
+
+type CreateUserInput struct {
+	Name string `json:"name" validate:"required"`
 }
 
 type CreateUserOutput struct {
@@ -21,8 +25,8 @@ func NewCreateUserUseCase(userRepository domain.IUserRepository) ICreateUserUseC
 	return CreateUserUseCase{userRepository: userRepository}
 }
 
-func (u CreateUserUseCase) Execute() (CreateUserOutput, error) {
-	user := userModel.New("test")
+func (u CreateUserUseCase) Execute(input CreateUserInput) (CreateUserOutput, error) {
+	user := userModel.New("test",input.Name)
 	err := u.userRepository.Save(user)
 	if err != nil {
 		return CreateUserOutput{}, err
