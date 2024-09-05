@@ -2,7 +2,7 @@ package useCase
 
 import (
 	userModel "kd-users/domain/model/user"
-	"kd-users/infra/domain"
+	"kd-users/infra/domain/userRepository"
 )
 
 type ICreateUserUseCase interface {
@@ -10,7 +10,7 @@ type ICreateUserUseCase interface {
 }
 
 type CreateUserUseCase struct {
-	userRepository domain.IUserRepository
+	userRepository userRepository.IUserRepository
 }
 
 type CreateUserInput struct {
@@ -21,12 +21,12 @@ type CreateUserOutput struct {
 	ID string
 }
 
-func NewCreateUserUseCase(userRepository domain.IUserRepository) ICreateUserUseCase {
+func NewCreateUserUseCase(userRepository userRepository.IUserRepository) ICreateUserUseCase {
 	return CreateUserUseCase{userRepository: userRepository}
 }
 
 func (u CreateUserUseCase) Execute(input CreateUserInput) (CreateUserOutput, error) {
-	user := userModel.New("test",input.Name)
+	user := userModel.New("test", input.Name)
 	err := u.userRepository.Save(user)
 	if err != nil {
 		return CreateUserOutput{}, err

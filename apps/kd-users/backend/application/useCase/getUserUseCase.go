@@ -2,7 +2,7 @@ package useCase
 
 import (
 	userModel "kd-users/domain/model/user"
-	"kd-users/infra/domain"
+	"kd-users/infra/domain/userRepository"
 )
 
 type IGetUserUseCase interface {
@@ -10,7 +10,7 @@ type IGetUserUseCase interface {
 }
 
 type GetUserUseCase struct {
-	userRepository domain.IUserRepository
+	userRepository userRepository.IUserRepository
 }
 
 type GetUserInput struct {
@@ -21,7 +21,7 @@ type GetUserOutput struct {
 	User userModel.User
 }
 
-func NewGetUserUseCase(userRepository domain.IUserRepository) IGetUserUseCase {
+func NewGetUserUseCase(userRepository userRepository.IUserRepository) IGetUserUseCase {
 	return GetUserUseCase{userRepository: userRepository}
 }
 

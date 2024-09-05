@@ -1,7 +1,7 @@
 package useCase
 
 import (
-	"kd-users/infra/domain"
+	"kd-users/infra/domain/userRepository"
 )
 
 type IDeleteUserUseCase interface {
@@ -9,14 +9,14 @@ type IDeleteUserUseCase interface {
 }
 
 type DeleteUserUseCase struct {
-	userRepository domain.IUserRepository
+	userRepository userRepository.IUserRepository
 }
 
 type DeleteUserInput struct {
 	ID string
 }
 
-func NewDeleteUserUseCase(userRepository domain.IUserRepository) IDeleteUserUseCase {
+func NewDeleteUserUseCase(userRepository userRepository.IUserRepository) IDeleteUserUseCase {
 	return DeleteUserUseCase{userRepository: userRepository}
 }
 

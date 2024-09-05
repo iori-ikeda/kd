@@ -1,19 +1,17 @@
 package useCase
 
-import (
-	"kd-users/infra/domain"
-)
+import "kd-users/infra/domain/userRepository"
 
 type IUpdateUserUseCase interface {
 	Execute(input UpdateUserInput) (UpdateUserOutput, error)
 }
 
 type UpdateUserUseCase struct {
-	userRepository domain.IUserRepository
+	userRepository userRepository.IUserRepository
 }
 
 type UpdateUserInput struct {
-	ID string
+	ID   string
 	Name string
 }
 
@@ -21,7 +19,7 @@ type UpdateUserOutput struct {
 	ID string
 }
 
-func NewUpdateUserUseCase(userRepository domain.IUserRepository) IUpdateUserUseCase {
+func NewUpdateUserUseCase(userRepository userRepository.IUserRepository) IUpdateUserUseCase {
 	return UpdateUserUseCase{userRepository: userRepository}
 }
 
