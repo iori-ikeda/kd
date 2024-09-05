@@ -3,9 +3,11 @@ package rds
 import (
 	"fmt"
 	"kd-users/config"
+	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/plugin/dbresolver"
 )
 
 type DBConn struct {
@@ -32,7 +34,21 @@ func NewRdsClient(conf config.Config) RdsClient {
 		panic(err)
 	}
 
-	// TODO: reader endpoint を追加する
+	err = db.Use(dbresolver.Register(dbresolver.Config{
+		// Replicas:          []gorm.Dialector{mysql.Open(dsn)}, // TODO: reader endpoint を追加する
+		Policy:            dbresolver.RandomPolicy{},
+		TraceResolverMode: true,
+	}).
+		// TODO: 値は仮。
+		// TODO: 値を config から読み込み環境ごとに変更できるようにする
+		SetMaxOpenConns(10).
+		SetConnMaxLifetime(24 * time.Hour).
+		SetMaxIdleConns(10).
+		SetConnMaxIdleTime(30 * time.Minute),
+	)
+	if err != nil {
+		panic(err)
+	}
 
 	return RdsClient{DBConn: DBConn{Conn: db}}
 }
