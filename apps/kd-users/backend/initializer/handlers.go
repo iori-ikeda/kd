@@ -1,10 +1,25 @@
 package initializer
 
-type Handlers struct{}
+import (
+	"kd-users/presentation/handler"
+)
+
+type Handlers struct {
+	userHandler handler.UserHandler
+}
 
 func initHandlers(
 	usecases UseCases,
 	scenarios Scenarios,
 ) Handlers {
-	return Handlers{}
+	userHandler := handler.NewUserHandler(
+		usecases.CreateUserUseCase,
+		usecases.ListUsersUseCase,
+		usecases.UpdateUserUseCase,
+		usecases.DeleteUserUseCase,
+	)
+
+	return Handlers{
+		userHandler: userHandler,
+	}
 }
