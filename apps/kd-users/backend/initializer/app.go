@@ -1,5 +1,7 @@
 package initializer
 
+import "kd-users/config"
+
 type App struct {
 	CommonInfras
 	DomainInfras
@@ -9,8 +11,8 @@ type App struct {
 	Handlers
 }
 
-func InitApp() App {
-	commonInfras := initCommonInfras()
+func InitApp(config config.Config) App {
+	commonInfras := initCommonInfras(config)
 	domainInfras := initDomainInfras(commonInfras)
 	domainServices := initDomainServices(commonInfras, domainInfras)
 	useCases := initUseCases(commonInfras, domainInfras, domainServices)

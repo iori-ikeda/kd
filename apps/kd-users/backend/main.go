@@ -1,9 +1,12 @@
 package main
 
-import "kd-users/initializer"
+import (
+	"kd-users/config"
+	"kd-users/initializer"
+)
 
 func main() {
-	app := initializer.InitApp()
+	config := config.NewConfig()
+	app := initializer.InitApp(config)
 	initializer.InitServer(app)
-
 }
