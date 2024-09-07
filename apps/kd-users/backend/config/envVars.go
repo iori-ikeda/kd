@@ -5,6 +5,7 @@ import "os"
 type EnvironmentVariables struct {
 	Env          string
 	Region       string
+	DBUser       string
 	DBSecretName string
 }
 
@@ -16,10 +17,12 @@ func LoadEnvironmentVariables() EnvironmentVariables {
 
 	region := os.Getenv("REGION")
 	dbSecretName := os.Getenv("DB_SECRET_NAME")
+	dbUser := os.Getenv("DB_USER")
 
 	return EnvironmentVariables{
 		Env:          env,
 		Region:       region,
+		DBUser:       dbUser,
 		DBSecretName: dbSecretName,
 	}
 }
