@@ -1,7 +1,5 @@
 package config
 
-import "os"
-
 const (
 	ENV_DEV  = "dev"
 	ENV_PROD = "prod"
@@ -14,16 +12,15 @@ type Config struct {
 }
 
 func NewConfig() Config {
-	env := os.Getenv("ENV")
-	if env == "" {
-		panic("ENV is not set")
-	}
-
 	envVars := LoadEnvironmentVariables()
 
-	return Config{
-		Env:          env,
-		Region:       envVars.Region,
-		DBSecretName: envVars.DBSecretName,
-	}
+	// (S1016)go-staticcheck で警告が出る。 EnvironmentVariables と Config のフィールドが同じなので。
+	// これらの構造体のフィールドが一致しなくなったらこっちの方針をとる
+	// return Config{ // nolint:staticcheck
+	// 	Env:          envVars.Env,
+	// 	Region:       envVars.Region,
+	// 	DBSecretName: envVars.DBSecretName,
+	// }
+
+	return Config(envVars)
 }
