@@ -127,6 +127,7 @@ KD_USERS_CDK_CONFIG_JSON=$(jq -n \
           availabilityZone: $rds_subnet2_az
         }
       ],
-      securityGroupId: $rds_sg_id
+      securityGroupId: $rds_sg_id,
+      dbUser: "kd-users-admin-desu"
     }
   }') KD_USERS_ENV=prod pnpm cdk deploy --profile $PROFILE

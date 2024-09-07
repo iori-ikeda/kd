@@ -43,6 +43,7 @@ export const getConfig = (
 		rds: {
 			subnets: json.rds.subnets,
 			securityGroupId: json.rds.securityGroupId,
+			dbUser: json.rds.dbUser,
 		},
 	};
 };
@@ -124,4 +125,5 @@ interface RdsConfig {
 		availabilityZone: string;
 	}>;
 	securityGroupId: string;
+	dbUser: string;
 }
