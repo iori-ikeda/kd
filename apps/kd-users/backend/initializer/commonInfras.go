@@ -1,7 +1,16 @@
 package initializer
 
-type CommonInfras struct{}
+import (
+	"kd-users/config"
+	"kd-users/infra/common/rds"
+)
 
-func initCommonInfras() CommonInfras {
-	return CommonInfras{}
+type CommonInfras struct {
+	RdsClient rds.RdsClient
+}
+
+func initCommonInfras(conf config.Config) CommonInfras {
+	rdsClient := rds.NewRdsClient(conf)
+
+	return CommonInfras{RdsClient: rdsClient}
 }

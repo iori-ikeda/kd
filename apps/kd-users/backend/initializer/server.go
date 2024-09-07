@@ -10,6 +10,8 @@ import (
 )
 
 func InitServer(app App) {
+	handlers := app.Handlers
+
 	e := echo.New()
 
 	e.Logger.SetLevel(log.INFO)
@@ -30,6 +32,13 @@ func InitServer(app App) {
 	e.GET("/health_check", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"result": "ok"})
 	})
+
+	userGroup := e.Group("/users")
+	userGroup.GET("/:id", handlers.userHandler.GetUser)
+	userGroup.GET("/", handlers.userHandler.ListUsers)
+	userGroup.POST("/", handlers.userHandler.CreateUser)
+	userGroup.PUT("/:id", handlers.userHandler.UpdateUser)
+	userGroup.DELETE("/:id", handlers.userHandler.DeleteUser)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", "8080")))
 }

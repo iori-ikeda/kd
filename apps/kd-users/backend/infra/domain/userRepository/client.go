@@ -1,9 +1,8 @@
-package domain
+package userRepository
 
 import (
 	userModel "kd-users/domain/model/user"
-
-	"gorm.io/gorm"
+	"kd-users/infra/common/rds"
 )
 
 type IUserRepository interface {
@@ -14,29 +13,29 @@ type IUserRepository interface {
 }
 
 type UserRepository struct {
-	db *gorm.DB
+	dbConn rds.DBConn
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
-	return UserRepository{db: db}
+func NewUserRepository(dbConn rds.DBConn) UserRepository {
+	return UserRepository{dbConn: dbConn}
 }
 
 func (r UserRepository) Save(user userModel.User) error {
-	return r.db.Save(&user).Error
+	return r.dbConn.Conn.Save(&user).Error
 }
 
 func (r UserRepository) FindByID(id string) (userModel.User, error) {
 	var user userModel.User
-	err := r.db.First(&user, "id = ?", id).Error
+	err := r.dbConn.Conn.First(&user, "id = ?", id).Error
 	return user, err
 }
 
 func (r UserRepository) FindAll() (userModel.Users, error) {
 	var users userModel.Users
-	err := r.db.Find(&users).Error
+	err := r.dbConn.Conn.Find(&users).Error
 	return users, err
 }
 
 func (r UserRepository) Remove(id string) error {
-	return r.db.Delete(&userModel.User{}, "id = ?", id).Error
+	return r.dbConn.Conn.Delete(&userModel.User{}, "id = ?", id).Error
 }
