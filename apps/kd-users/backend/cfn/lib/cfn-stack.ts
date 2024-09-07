@@ -129,6 +129,12 @@ export class CfnStack extends cdk.Stack {
 			},
 		);
 
+		const rdsCredentials = rds.Credentials.fromGeneratedSecret(
+			config.rds.dbUser,
+		);
+
+		const DBSecretName = rdsCredentials.secretName;
+
 		const dbCluster = new rds.DatabaseCluster(
 			this,
 			`${idWithHyphen}db-cluster`,

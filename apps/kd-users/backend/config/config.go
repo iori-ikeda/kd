@@ -8,12 +8,9 @@ const (
 )
 
 type Config struct {
-	Env        string
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
+	Env          string
+	Region       string
+	DBSecretName string
 }
 
 func NewConfig() Config {
@@ -25,11 +22,8 @@ func NewConfig() Config {
 	envVars := LoadEnvironmentVariables()
 
 	return Config{
-		Env:        env,
-		DBHost:     envVars.DBHost,
-		DBPort:     envVars.DBPort,
-		DBUser:     envVars.DBUser,
-		DBPassword: envVars.DBPassword,
-		DBName:     envVars.DBName,
+		Env:          env,
+		Region:       envVars.Region,
+		DBSecretName: envVars.DBSecretName,
 	}
 }
