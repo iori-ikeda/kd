@@ -8,7 +8,6 @@ const (
 type Config struct {
 	Env          string
 	Region       string
-	DBUser       string
 	DBSecretName string
 }
 
