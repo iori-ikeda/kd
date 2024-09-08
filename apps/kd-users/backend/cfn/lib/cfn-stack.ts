@@ -129,10 +129,6 @@ export class CfnStack extends cdk.Stack {
 			},
 		);
 
-		const rdsCredentials = rds.Credentials.fromGeneratedSecret(
-			config.rds.dbUser,
-		);
-
 		const defaultDatabaseName = id.replace(/-/g, "_");
 
 		const dbCluster = new rds.DatabaseCluster(
@@ -161,7 +157,7 @@ export class CfnStack extends cdk.Stack {
 				storageEncrypted: true,
 				removalPolicy: cdk.RemovalPolicy.DESTROY, // 本来なら RETAIN にすべき。コスト削減のために、cdk destroy を頻繁に行う予定があるためこの値にしてある。
 				securityGroups: [rdsSG],
-				credentials: rdsCredentials,
+				credentials: rds.Credentials.fromGeneratedSecret(config.rds.dbUser),
 			},
 		);
 
