@@ -279,6 +279,11 @@ export class CfnStack extends cdk.Stack {
 					logGroup,
 					streamPrefix: `${idWithHyphen}container`, // TODO: ログのプレフィックスを変更する
 				}),
+				environment: {
+					ENV: config.env,
+					REGION: this.region,
+					DB_SECRET_NAME: dbCluster.secret?.secretName ?? "",
+				},
 			})
 			.addPortMappings({
 				containerPort: config.ecs.taskDef.container.containerPort,
