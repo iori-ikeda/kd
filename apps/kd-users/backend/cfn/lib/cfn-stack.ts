@@ -133,7 +133,7 @@ export class CfnStack extends cdk.Stack {
 			config.rds.dbUser,
 		);
 
-		const DBSecretName = rdsCredentials.secretName;
+		const defaultDatabaseName = id.replace(/-/g, "_");
 
 		const dbCluster = new rds.DatabaseCluster(
 			this,
@@ -144,7 +144,7 @@ export class CfnStack extends cdk.Stack {
 				engine,
 				parameterGroup: dbClusterParameterGroup,
 				cloudwatchLogsExports: ["general", "slowquery"],
-				defaultDatabaseName: id.replace(/-/g, "_"),
+				defaultDatabaseName,
 				subnetGroup: rdsSubnetGroup,
 				writer: cdk.aws_rds.ClusterInstance.provisioned(
 					`${idWithHyphen}rds-writer-instance`,
