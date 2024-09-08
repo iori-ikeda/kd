@@ -255,7 +255,16 @@ export class CfnStack extends cdk.Stack {
 			roleName: `${idWithHyphen}task-role`,
 			assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
 		});
-		// TODO: ポリシーを追加
+		taskRole.addToPolicy(
+			new iam.PolicyStatement({
+				effect: iam.Effect.ALLOW,
+				actions: [
+					"secretsmanager:DescribeSecret",
+					"secretsmanager:GetSecretValue",
+				],
+				resources: ["*"],
+			}),
+		);
 
 		const taskDefinition = new ecs.TaskDefinition(
 			this,
