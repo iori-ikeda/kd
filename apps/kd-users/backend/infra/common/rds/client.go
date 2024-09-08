@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"kd-users/config"
+	"strconv"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -32,7 +33,7 @@ func NewRdsClient(conf config.Config) RdsClient {
 		secret.Username,
 		secret.Password,
 		secret.Host,
-		secret.Port,
+		strconv.FormatInt(secret.Port, 10),
 		secret.DBName,
 	)
 
@@ -100,7 +101,7 @@ type DBSecret struct {
 	Password            string `json:"password"`
 	DBName              string `json:"dbname"`
 	Engine              string `json:"engine"`
-	Port                string `json:"port"`
+	Port                int64  `json:"port"`
 	Host                string `json:"host"`
 	Username            string `json:"username"`
 }
