@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 type EnvironmentVariables struct {
 	Env          string
@@ -9,17 +12,21 @@ type EnvironmentVariables struct {
 }
 
 func LoadEnvironmentVariables() EnvironmentVariables {
-	env := os.Getenv("ENV")
-	if env == "" {
-		panic("ENV is not set")
-	}
-
-	region := os.Getenv("REGION")
-	dbSecretName := os.Getenv("DB_SECRET_NAME")
+	env := mustGetEnv("ENV")
+	region := mustGetEnv("REGION")
+	dbSecretName := mustGetEnv("DB_SECRET_NAME")
 
 	return EnvironmentVariables{
 		Env:          env,
 		Region:       region,
 		DBSecretName: dbSecretName,
 	}
+}
+
+func mustGetEnv(key string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		panic(fmt.Sprintf("%s is not set", key))
+	}
+	return value
 }
