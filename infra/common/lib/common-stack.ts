@@ -464,7 +464,8 @@ const createRdsSecurityGroup = (
 		securityGroupName: `${idWithHyphen}rds-sg`,
 	});
 
-	rdsSG.addIngressRule(fargateServiceSG, ec2.Port.tcp(3306));
+	rdsSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(3306)); // ローカルから動作確認する用。本来なら fargateServiceSG からのリクエストのみを許可するべき。
+	// rdsSG.addIngressRule(fargateServiceSG, ec2.Port.tcp(3306));
 	Tags.of(rdsSG).add("Name", `${idWithHyphen}rds-sg`);
 
 	return rdsSG;
