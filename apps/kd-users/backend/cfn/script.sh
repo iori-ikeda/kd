@@ -24,6 +24,11 @@ RDS_SUBNET_AZ_1=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-co
 RDS_SUBNET_ID_2=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-ingress-subnet-2" --query "Subnets[0].SubnetId" --output text --profile $PROFILE --region $REGION)
 RDS_SUBNET_AZ_2=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-ingress-subnet-2" --query "Subnets[0].AvailabilityZone" --output text --profile $PROFILE --region $REGION)
 
+HOSTED_ZONE_NAME="kd-users-prod.com"
+ZONE_NAME=$(aws route53 list-hosted-zones --profile $PROFILE --region $REGION --query "HostedZones[?Name == '$HOSTED_ZONE_NAME.'] | [0].Name" --output text)
+HOSTED_ZONE_ID=$(aws route53 list-hosted-zones --profile $PROFILE --region $REGION --query "HostedZones[?Name == '$HOSTED_ZONE_NAME.'] | [0].Id" --output text | cut -d'/' -f3)
+ALB_DOMAIN="api.kd-users-prod.com"
+CERTIFICATE_ARN=$(aws acm list-certificates --profile $PROFILE --region $REGION --query "CertificateSummaryList[?DomainName == '$HOSTED_ZONE_NAME'] | [0].CertificateArn" --output text)
 
 KD_USERS_CDK_CONFIG_JSON=$(jq -n \
   --arg account_id "$ACCOUNT_ID" \
@@ -34,15 +39,15 @@ KD_USERS_CDK_CONFIG_JSON=$(jq -n \
   --arg fargate_subnet1_az "$FARGATE_SUBNET_AZ_1" \
   --arg fargate_subnet2_id "$FARGATE_SUBNET_ID_2" \
   --arg fargate_subnet2_az "$FARGATE_SUBNET_AZ_2" \
-  --arg zone_name "kd-users-prod.com" \
-  --arg hosted_zone_id "Z09397105OBU47BZ6EOS" \
-  --arg alb_domain "api.kd-users-prod.com" \
+  --arg zone_name "$HOSTED_ZONE_NAME" \
+  --arg hosted_zone_id "$HOSTED_ZONE_ID" \
+  --arg alb_domain "$ALB_DOMAIN" \
   --arg alb_sg_id "$ALB_SECURITY_GROUP_ID" \
   --arg alb_subnet1_id "$ALB_SUBNET_ID_1" \
   --arg alb_subnet1_az "$ALB_SUBNET_AZ_1" \
   --arg alb_subnet2_id "$ALB_SUBNET_ID_2" \
   --arg alb_subnet2_az "$ALB_SUBNET_AZ_2" \
-  --arg cert_arn "arn:aws:acm:ap-northeast-1:654654331843:certificate/93a69ce3-ce0e-46ad-bdbd-0224e9cfe22c" \
+  --arg cert_arn "$CERTIFICATE_ARN" \
   --arg rds_sg_id "$RDS_SECURITY_GROUP_ID" \
   --arg rds_subnet1_id "$RDS_SUBNET_ID_1" \
   --arg rds_subnet1_az "$RDS_SUBNET_AZ_1" \
