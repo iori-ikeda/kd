@@ -19,10 +19,11 @@ ALB_SUBNET_AZ_1=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-co
 ALB_SUBNET_ID_2=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-ingress-subnet-2" --query "Subnets[0].SubnetId" --output text --profile $PROFILE --region $REGION)
 ALB_SUBNET_AZ_2=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-ingress-subnet-2" --query "Subnets[0].AvailabilityZone" --output text --profile $PROFILE --region $REGION)
 RDS_SECURITY_GROUP_ID=$(aws ec2 describe-security-groups --filters "Name=tag:Name,Values=kd-common-prod-rds-sg" --query "SecurityGroups[0].GroupId" --output text --profile $PROFILE --region $REGION)
-RDS_SUBNET_ID_1=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-db-subnet-1" --query "Subnets[0].SubnetId" --output text --profile $PROFILE --region $REGION)
-RDS_SUBNET_AZ_1=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-db-subnet-1" --query "Subnets[0].AvailabilityZone" --output text --profile $PROFILE --region $REGION)
-RDS_SUBNET_ID_2=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-db-subnet-2" --query "Subnets[0].SubnetId" --output text --profile $PROFILE --region $REGION)
-RDS_SUBNET_AZ_2=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-db-subnet-2" --query "Subnets[0].AvailabilityZone" --output text --profile $PROFILE --region $REGION)
+RDS_SUBNET_ID_1=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-ingress-subnet-1" --query "Subnets[0].SubnetId" --output text --profile $PROFILE --region $REGION)
+RDS_SUBNET_AZ_1=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-ingress-subnet-1" --query "Subnets[0].AvailabilityZone" --output text --profile $PROFILE --region $REGION)
+RDS_SUBNET_ID_2=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-ingress-subnet-2" --query "Subnets[0].SubnetId" --output text --profile $PROFILE --region $REGION)
+RDS_SUBNET_AZ_2=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=kd-common-prod-ingress-subnet-2" --query "Subnets[0].AvailabilityZone" --output text --profile $PROFILE --region $REGION)
+
 
 KD_USERS_CDK_CONFIG_JSON=$(jq -n \
   --arg account_id "$ACCOUNT_ID" \
