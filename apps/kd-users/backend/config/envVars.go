@@ -1,28 +1,32 @@
 package config
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 type EnvironmentVariables struct {
-	Port       string
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
+	Env          string
+	Region       string
+	DBSecretName string
 }
 
 func LoadEnvironmentVariables() EnvironmentVariables {
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
+	env := mustGetEnv("ENV")
+	region := mustGetEnv("REGION")
+	dbSecretName := mustGetEnv("DB_SECRET_NAME")
 
 	return EnvironmentVariables{
-		DBHost:     dbHost,
-		DBPort:     dbPort,
-		DBUser:     dbUser,
-		DBPassword: dbPassword,
-		DBName:     dbName,
+		Env:          env,
+		Region:       region,
+		DBSecretName: dbSecretName,
 	}
+}
+
+func mustGetEnv(key string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		panic(fmt.Sprintf("%s is not set", key))
+	}
+	return value
 }
